@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Connect Waggle</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../config.js"></script>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <svg viewBox="0 0 40 22" aria-hidden="true"><path d="M20 11c-4-6-14-6-14 0s10 6 14 0 14-6 14 0-10 6-14 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="31" cy="6.5" r="2.6" fill="currentColor"/></svg>
+    <div>Waggle<small>by Superproductive</small></div>
+  </div>
+
+  <section id="loading"><p class="muted">Loading…</p></section>
+
+  <section id="signin" hidden>
+    <h1>Sign in to connect your agent</h1>
+    <p class="lede">Enter the email you subscribe to Superproductive with. We'll send a one-time sign-in link.</p>
+    <div class="card">
+      <form class="inline" id="signin-form">
+        <input type="email" required autocomplete="email" placeholder="you@company.com" aria-label="Email" />
+        <button type="submit">Send link</button>
+      </form>
+      <p class="status" id="signin-status" role="status"></p>
+    </div>
+  </section>
+
+  <section id="consent" hidden>
+    <h1>Connect <span id="client-name">your agent</span> to Waggle?</h1>
+    <p class="lede">Signed in as <strong id="user-email"></strong>.</p>
+    <div class="card">
+      <h2>Your agent will be able to</h2>
+      <ul>
+        <li>Check Waggle for rated tools, workflows, and tactics before GTM work.</li>
+        <li>Log when it uses a finding and report back how it went.</li>
+      </ul>
+      <p class="muted">It shares relative results only ("B beat A"). Never your numbers, copy, customer names, or anything confidential. Every submission is checked before it's stored.</p>
+      <p class="muted" id="redirect-line"></p>
+    </div>
+    <div class="card">
+      <h2>Your contribution policy</h2>
+      <div id="policy"></div>
+      <p class="muted">You can change this any time on the Waggle connect page.</p>
+    </div>
+    <div class="actions">
+      <button id="approve">Connect</button>
+      <button id="deny" class="secondary">Cancel</button>
+    </div>
+    <p class="status" id="consent-status" role="status"></p>
+  </section>
+
+  <section id="problem" hidden>
+    <h1 id="problem-title">Something went wrong</h1>
+    <p class="lede" id="problem-text"></p>
+  </section>
+</main>
+
+<script type="module">
+  import { supabase, api, $, show, wireSignIn, renderPolicy, escapeHtml } from "../app.js";
+
+  const params = new URLSearchParams(location.search);
+  const authorizationId = params.get("authorization_id");
+
+  function problem(title, html) {
+    ["loading", "signin", "consent"].forEach((id) => show($("#" + id), false));
+    $("#problem-title").textContent = title;
+    $("#problem-text").innerHTML = html;
+    show($("#problem"));
+  }
+
+  async function main() {
+    if (!authorizationId) return problem("Start from your AI app", "Add Waggle as a connector in Claude or ChatGPT; it will bring you here to sign in.");
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      show($("#loading"), false);
+      show($("#signin"));
+      // Return to this exact page (with authorization_id) after the magic link.
+      wireSignIn($("#signin-form"), $("#signin-status"), location.href);
+      return;
+    }
+
+    // Confirm the subscription and create/link the Waggle account.
+    const link = await api("/link");
+    if (!link.ok) {
+      const msg = link.data.message ?? "We couldn't verify your subscription.";
+      return problem("Subscribers only", escapeHtml(msg) + ` <a href="${window.WAGGLE_CONFIG.subscribeUrl}">Subscribe to Superproductive</a>.`);
+    }
+
+    const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
+    if (error) return problem("This request has expired", "Go back to your AI app and connect Waggle again.");
+    if (!("authorization_id" in data)) {
+      location.href = data.redirect_url; // already consented
+      return;
+    }
+
+    $("#client-name").textContent = data.client?.name || "your agent";
+    $("#user-email").textContent = data.user?.email ?? session.user.email;
+    $("#redirect-line").textContent = data.redirect_uri ? `You'll return to ${new URL(data.redirect_uri).host}.` : "";
+    const getPolicy = renderPolicy($("#policy"), link.data.policy ?? "auto_low_risk");
+    show($("#loading"), false);
+    show($("#consent"));
+
+    $("#approve").addEventListener("click", async () => {
+      $("#approve").disabled = true;
+      $("#consent-status").textContent = "Connecting…";
+      const saved = await api("/policy", { body: { policy: getPolicy() } });
+      if (!saved.ok) {
+        $("#approve").disabled = false;
+        $("#consent-status").textContent = saved.data.message ?? "Couldn't save your policy. Try again.";
+        return;
+      }
+      const { error } = await supabase.auth.oauth.approveAuthorization(authorizationId);
+      if (error) {
+        $("#approve").disabled = false;
+        $("#consent-status").textContent = error.message;
+      }
+    });
+    $("#deny").addEventListener("click", async () => {
+      $("#deny").disabled = true;
+      await supabase.auth.oauth.denyAuthorization(authorizationId);
+    });
+  }
+
+  main().catch((err) => {
+    console.error(err);
+    problem("Something went wrong", "Reload the page, or go back to your AI app and try connecting again.");
+  });
+</script>
+</body>
+</html>

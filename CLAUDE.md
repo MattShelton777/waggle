@@ -9,21 +9,22 @@ packages/core        shared enums, Zod schemas, rubric, weight + scoring math, s
                      plausibility, readout plans, reputation, give-to-get/policy decisions
 packages/server      MCP server logic: the 8 tools, notices, DB access over waggle.api_* RPCs.
                      Runtime-agnostic; tested in Node against PGlite
-supabase/functions   mcp/index.ts: thin Deno Edge Function entry (OAuth via Supabase Auth,
-                     postgres.js as waggle_api_login). Imports a bundle built from packages/server
+supabase/functions   mcp/ (MCP endpoint) and connect-api/ (JSON API for the connect site): thin Deno
+                     entries that import _shared/waggle.bundle.js, built from packages/server
 supabase/migrations  DDL, append-only triggers, views, roles, RLS, RPC functions, seeds
 supabase/test        runs every migration in PGlite (Postgres + pgvector + pg_trgm) and tests the RPCs
 sim                  adversarial simulation of the reputation model (`npm run sim`)
 docs                 simulation results and (later) rules, privacy, terms drafts
 skill/waggle         the thin SKILL.md shipped to clients
-apps/                connect/consent page, admin (not built yet)
+apps/connect         static connect site: connect page, OAuth consent page, approval page (no build step)
+apps/admin           not built yet
 ```
 
 ## Commands
 
 - `npm run check`: typecheck + all tests. Run before you say something works.
 - `npm test`, `npm run typecheck`
-- `npm run build:functions`: bundle packages/server for the Edge Function. `npm run deploy:mcp` builds and deploys (see docs/deploy.md).
+- `npm run build:functions`: bundle packages/server for the Edge Functions; `npm run build:skill`: rebuild the skill zip. `npm run deploy:functions` builds and deploys (see docs/deploy.md).
 - `npm run sim`: print simulation results. Regenerate `docs/simulation.md` after changing scoring, weights, dedupe, or reputation.
 
 ## Rules that are easy to break

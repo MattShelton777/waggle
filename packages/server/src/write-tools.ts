@@ -268,7 +268,10 @@ export async function approvalToken(secret: string, eventId: string): Promise<st
 }
 
 export async function approvalTokenHash(secret: string, eventId: string): Promise<string> {
-  const token = await approvalToken(secret, eventId);
+  return approvalTokenHashFromToken(await approvalToken(secret, eventId));
+}
+
+export async function approvalTokenHashFromToken(token: string): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)));
   return [...digest].map((b) => b.toString(16).padStart(2, "0")).join("");
 }

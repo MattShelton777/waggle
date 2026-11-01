@@ -12,4 +12,4 @@ skill/dist/
 .DS_Store
 
 # Generated Edge Function bundle (npm run build:functions)
-supabase/functions/mcp/waggle.bundle.js
+supabase/functions/_shared/waggle.bundle.js

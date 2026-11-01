@@ -9,14 +9,14 @@
 // can execute waggle.api_* functions and nothing else. Never give this
 // function the service-role key.
 //
-// The server logic is bundled into ./waggle.bundle.js by
+// The server logic is bundled into ../_shared/waggle.bundle.js by
 // `npm run build:functions`; run that before `supabase functions deploy mcp`.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { pipeline } from "npm:@supabase/middleware@1";
 import { withOAuthProtectedResource, withSupabase } from "npm:@supabase/server@1";
 import postgres from "npm:postgres@3.4.9";
-import { handleMcpRequest, WaggleDb } from "./waggle.bundle.js";
+import { handleMcpRequest, WaggleDb } from "../_shared/waggle.bundle.js";
 
 type Embedder = { embed(text: string): Promise<number[] | null> };
 

@@ -208,6 +208,14 @@ export class WaggleDb {
     return this.scalar("select waggle.api_get_subscriber($1::uuid) as r", [id]);
   }
 
+  async setPolicy(subscriberId: string, policy: SubscriberInfo["policy"]): Promise<void> {
+    await this.q("select waggle.api_set_policy($1::uuid, $2)", [subscriberId, policy]);
+  }
+
+  decideApproval(tokenHash: string, decision: "approve" | "discard"): Promise<{ event_id: string; status: string }> {
+    return this.scalar("select waggle.api_decide_approval($1, $2) as r", [tokenHash, decision]);
+  }
+
   async touchSubscriber(id: string, rulesVersionSeen: number | undefined): Promise<void> {
     await this.q("select waggle.api_touch_subscriber($1::uuid, $2::int)", [id, rulesVersionSeen ?? null]);
   }

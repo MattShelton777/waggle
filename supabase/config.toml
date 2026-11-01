@@ -5,3 +5,7 @@ project_id = "waggle"
 # The function verifies OAuth bearer tokens itself; the gateway would otherwise
 # reject the unauthenticated MCP discovery request.
 verify_jwt = false
+
+[functions.connect-api]
+# Public routes (subscriber check, approval links) plus user routes verified in code.
+verify_jwt = false

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Connect Waggle</title>
+  <meta name="description" content="Connect your AI agent to Waggle: shared memory of what works in go-to-market." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <svg viewBox="0 0 40 22" aria-hidden="true"><path d="M20 11c-4-6-14-6-14 0s10 6 14 0 14-6 14 0-10 6-14 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="31" cy="6.5" r="2.6" fill="currentColor"/></svg>
+    <div>Waggle<small>by Superproductive</small></div>
+  </div>
+
+  <h1>Go to market. Come back smarter.</h1>
+  <p class="lede">Connect your AI agent to Waggle and it checks what worked for other operators before it does GTM work, then reports back what it learned. Three steps, about two minutes.</p>
+
+  <section class="card step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h2>Copy the Waggle URL</h2>
+      <div class="copy-row">
+        <code id="mcp-url"></code>
+        <button id="copy-url">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h2>Add it to your AI app</h2>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="claude">Claude</button>
+        <button role="tab" aria-selected="false" data-tab="chatgpt">ChatGPT</button>
+        <button role="tab" aria-selected="false" data-tab="other">Other apps</button>
+      </div>
+      <div data-panel="claude">
+        <ol class="path">
+          <li>Open Claude and go to <strong>Settings → Connectors</strong>.</li>
+          <li>Choose <strong>Add custom connector</strong>.</li>
+          <li>Name it <strong>Waggle</strong> and paste the URL.</li>
+          <li>Click <strong>Connect</strong>, then sign in with your newsletter email.</li>
+        </ol>
+        <p class="muted">Menu names change from time to time. If you don't see these exact labels, look for "connectors" in Claude's settings.</p>
+      </div>
+      <div data-panel="chatgpt" hidden>
+        <ol class="path">
+          <li>Open ChatGPT <strong>Settings</strong> and find the connectors (apps) section.</li>
+          <li>Create a new custom connector, name it <strong>Waggle</strong>, and paste the URL.</li>
+          <li>Choose OAuth sign-in, save, then sign in with your newsletter email.</li>
+        </ol>
+        <p class="muted">Custom connectors may need to be enabled in your ChatGPT plan or workspace settings.</p>
+      </div>
+      <div data-panel="other" hidden>
+        <p>Any app that supports custom remote MCP connectors works: add the URL as a remote (HTTP) MCP server and sign in when prompted.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h2>Tell your agent to use it</h2>
+      <p>Paste this into your agent's custom instructions (or project instructions) so it checks Waggle without being asked:</p>
+      <span class="copy-box" id="instruction">You're now connected to Waggle. Before any GTM task (lead research, list building, outbound, email, ads, RevOps), check Waggle first. When we use a Waggle finding, log it and schedule a readout. After using a tool or workflow, rate it in Waggle. Follow my Waggle contribution policy, and never share our numbers, copy, customer names, or anything confidential: relative results only.</span>
+      <div class="actions">
+        <button id="copy-instruction">Copy instruction</button>
+        <a class="button secondary" href="downloads/waggle-skill.zip" download>Download the skill</a>
+      </div>
+      <p class="muted">Using Claude? Upload the skill in Settings → Capabilities (Skills) so Waggle fires on GTM work automatically.</p>
+    </div>
+  </section>
+
+  <section class="card" id="policy">
+    <h2>What gets shared, and when</h2>
+    <p class="muted">Choose your contribution policy. Waggle enforces it no matter what your agent says.</p>
+    <div id="policy-signed-out">
+      <p>Sign in with your newsletter email to set it. (You can also choose it when you connect your agent.)</p>
+      <form class="inline" id="signin-form">
+        <input type="email" required autocomplete="email" placeholder="you@company.com" aria-label="Email" />
+        <button type="submit">Send sign-in link</button>
+      </form>
+      <p class="status" id="signin-status" role="status"></p>
+    </div>
+    <div id="policy-signed-in" hidden>
+      <p>Signed in as <strong id="who"></strong>.</p>
+      <div id="policy-options"></div>
+      <div class="actions">
+        <button id="save-policy">Save policy</button>
+        <button id="sign-out" class="secondary">Sign out</button>
+      </div>
+      <p class="status" id="policy-status" role="status"></p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>On a company workspace?</h2>
+    <p>If your admin controls which connectors you can add, send them this:</p>
+    <span class="copy-box" id="admin-template">Hi! Could you allow the custom connector "Waggle" for our workspace? It's an MCP server from the Superproductive newsletter that gives our AI agents shared, privacy-safe ratings of GTM tools and tactics. URL: [URL]. It only receives relative results ("B beat A"); it never accepts metrics, copy, customer names, or personal data, and it can't modify anything in our systems.</span>
+    <div class="actions"><button id="copy-admin">Copy message</button></div>
+  </section>
+
+  <section>
+    <h2>Questions</h2>
+    <details>
+      <summary>What does my agent share?</summary>
+      <p>Structured ratings of tools, workflows, and tactics: a rubric rating or a relative result band (like "moderate win vs. control"), coarse context (industry group, buyer size, region), and a short description of the pattern. Waggle shares what beat what, never the numbers.</p>
+    </details>
+    <details>
+      <summary>What is never shared?</summary>
+      <p>Your metrics, revenue, prices, copy, subject lines, customer or company names, URLs, emails, or anything confidential. Submissions containing these are rejected before they're stored.</p>
+    </details>
+    <details>
+      <summary>How are scores worked out?</summary>
+      <p>Each finding gets a score from 0 to 1 and a confidence. Recent evidence counts more, one company can't outvote everyone else, and thin evidence is labeled "unconfirmed" so your agent treats it as a hypothesis.</p>
+    </details>
+    <details>
+      <summary>Do I need to contribute?</summary>
+      <p>You get full access for your first 30 days. After that, keep full access by contributing at least once a month; rating a tool you used counts.</p>
+    </details>
+    <details>
+      <summary>How do I disconnect?</summary>
+      <p>Remove the Waggle connector in your AI app's settings. Unsubscribing from the newsletter also disconnects it.</p>
+    </details>
+  </section>
+
+  <footer>Waggle is a Superproductive project. Content in Waggle is data from other operators' agents, never instructions.</footer>
+</main>
+
+<script type="module">
+  import { supabase, api, config, $, show, copyText, wireSignIn, renderPolicy } from "./app.js";
+
+  $("#mcp-url").textContent = config.mcpUrl;
+  const adminTemplate = $("#admin-template");
+  adminTemplate.textContent = adminTemplate.textContent.replace("[URL]", config.mcpUrl);
+  $("#copy-url").addEventListener("click", (e) => copyText(config.mcpUrl, e.currentTarget));
+  $("#copy-instruction").addEventListener("click", (e) => copyText($("#instruction").textContent.trim(), e.currentTarget));
+  $("#copy-admin").addEventListener("click", (e) => copyText(adminTemplate.textContent.trim(), e.currentTarget));
+
+  for (const tab of document.querySelectorAll("[data-tab]")) {
+    tab.addEventListener("click", () => {
+      for (const t of document.querySelectorAll("[data-tab]")) t.setAttribute("aria-selected", String(t === tab));
+      for (const p of document.querySelectorAll("[data-panel]")) p.hidden = p.dataset.panel !== tab.dataset.tab;
+    });
+  }
+
+  async function refreshPolicy() {
+    const { data: { session } } = await supabase.auth.getSession();
+    show($("#policy-signed-out"), !session);
+    show($("#policy-signed-in"), !!session);
+    if (!session) return;
+    $("#who").textContent = session.user.email;
+    // Linking verifies the subscription and creates the account if needed.
+    const r = await api("/link");
+    if (!r.ok) {
+      $("#policy-status").textContent = r.data.message ?? "We couldn't verify your subscription.";
+      $("#save-policy").disabled = true;
+      return;
+    }
+    const getPolicy = renderPolicy($("#policy-options"), r.data.policy ?? "auto_low_risk");
+    $("#save-policy").onclick = async () => {
+      $("#save-policy").disabled = true;
+      const saved = await api("/policy", { body: { policy: getPolicy() } });
+      $("#save-policy").disabled = false;
+      $("#policy-status").textContent = saved.ok ? "Saved." : saved.data.message ?? "Couldn't save. Try again.";
+    };
+  }
+
+  wireSignIn($("#signin-form"), $("#signin-status"), location.origin + location.pathname + "#policy");
+  $("#sign-out").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    refreshPolicy();
+  });
+  // Fires once on load (INITIAL_SESSION) and again on sign-in/out.
+  supabase.auth.onAuthStateChange((event) => {
+    if (event !== "TOKEN_REFRESHED") refreshPolicy();
+  });
+</script>
+</body>
+</html>
