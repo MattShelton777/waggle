@@ -1,0 +1,13 @@
+{
+  "name": "@waggle/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared types, Zod schemas, enums, rubric, weight and scoring math for Waggle.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}

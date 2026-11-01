@@ -1,0 +1,7 @@
+# Minimal Supabase CLI config. Run `supabase link --project-ref <ref>` once the project exists.
+project_id = "waggle"
+
+[functions.mcp]
+# The function verifies OAuth bearer tokens itself; the gateway would otherwise
+# reject the unauthenticated MCP discovery request.
+verify_jwt = false

@@ -1,0 +1,14 @@
+{
+  "name": "@waggle/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Waggle MCP server logic: tools, notices, and DB access. Runtime-agnostic; deployed as a Supabase Edge Function.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@waggle/core": "*"
+  }
+}

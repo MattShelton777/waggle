@@ -1,0 +1,31 @@
+{
+  "name": "waggle",
+  "private": true,
+  "type": "module",
+  "description": "Waggle: shared, structured memory for GTM agents (a Superproductive product).",
+  "workspaces": [
+    "packages/*",
+    "sim"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sim": "tsx sim/src/report.ts",
+    "check": "npm run typecheck && npm test",
+    "build:functions": "node scripts/build-functions.mjs",
+    "deploy:mcp": "npm run build:functions && supabase functions deploy mcp --no-verify-jwt"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "@electric-sql/pglite-pgvector": "^0.0.15",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

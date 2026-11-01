@@ -1,0 +1,10 @@
+{
+  "name": "@waggle/sim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Adversarial simulation harness for the Waggle reputation model.",
+  "dependencies": {
+    "@waggle/core": "*"
+  }
+}
