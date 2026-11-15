@@ -1,7 +1,6 @@
 // JSON API behind the connect and consent pages (apps/connect).
 //
-//   POST /connect-api/check     { email }              public: is this email an active subscriber?
-//   POST /connect-api/link      { policy? }            signed in: verify subscription, create/link subscriber
+//   POST /connect-api/link      { policy? }            signed in: create or link the Waggle account
 //   GET  /connect-api/account                          signed in: connection status and policy
 //   POST /connect-api/policy    { policy }             signed in: change contribution policy
 //   POST /connect-api/approval  { token, decision }    public: one-click approval link (token is the secret)
@@ -14,8 +13,6 @@ import { pipeline } from "npm:@supabase/middleware@1";
 import { withSupabase } from "npm:@supabase/server@1";
 import postgres from "npm:postgres@3.4.9";
 import {
-  beehiivProvider,
-  checkSubscriber,
   decideApproval,
   getAccount,
   linkAccount,
@@ -32,11 +29,9 @@ const env = (name: string) => {
 const sql = postgres(env("WAGGLE_API_DB_URL"), { prepare: false, max: 3, idle_timeout: 20 });
 const deps = {
   db: new WaggleDb((text: string, params?: unknown[]) => sql.unsafe(text, (params ?? []) as never[]) as never),
-  newsletter: beehiivProvider(env("WAGGLE_BEEHIIV_API_KEY"), env("WAGGLE_BEEHIIV_PUBLICATION_ID")),
-  subscribeUrl: Deno.env.get("WAGGLE_SUBSCRIBE_URL") ?? "https://superproductive.co",
 };
 
-// The connect site's origin(s), e.g. https://waggle.superproductive.co
+// The connect site's origin(s), e.g. https://mattshelton777.github.io
 const siteOrigins = new Set((Deno.env.get("WAGGLE_SITE_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean));
 
 function cors(req: Request): Record<string, string> {
@@ -62,8 +57,7 @@ const handler = pipeline([withSupabase({ auth: ["user", "none"] })], async (req,
 
   try {
     let r;
-    if (req.method === "POST" && route === "/check") r = await checkSubscriber(deps, body.email);
-    else if (req.method === "POST" && route === "/approval") r = await decideApproval(deps, body.token, body.decision);
+    if (req.method === "POST" && route === "/approval") r = await decideApproval(deps, body.token, body.decision);
     else if (req.method === "POST" && route === "/link") r = user ? await linkAccount(deps, user, body.policy) : null;
     else if (req.method === "POST" && route === "/policy") r = user ? await setPolicy(deps, user, body.policy) : null;
     else if (req.method === "GET" && route === "/account") r = user ? await getAccount(deps, user) : null;

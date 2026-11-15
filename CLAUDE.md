@@ -1,6 +1,6 @@
 # Waggle: conventions for Claude Code sessions
 
-Waggle is a shared, structured memory for GTM agents (a Superproductive product). The full spec is [WAGGLE_BUILD_PLAN.md](WAGGLE_BUILD_PLAN.md). Read it before changing behavior; section numbers (§) in code comments refer to it.
+Waggle is a shared, structured memory for GTM agents: a standalone product (not tied to the Superproductive newsletter; anyone with a verified email can connect). The full spec is [WAGGLE_BUILD_PLAN.md](WAGGLE_BUILD_PLAN.md); its newsletter parts are superseded, see the note at its top. Read it before changing behavior; section numbers (§) in code comments refer to it.
 
 ## Layout
 
@@ -16,7 +16,7 @@ supabase/test        runs every migration in PGlite (Postgres + pgvector + pg_tr
 sim                  adversarial simulation of the reputation model (`npm run sim`)
 docs                 simulation results and (later) rules, privacy, terms drafts
 skill/waggle         the thin SKILL.md shipped to clients
-apps/connect         static connect site: connect page, OAuth consent page, approval page (no build step)
+apps/connect         static site on GitHub Pages: homepage with setup module, OAuth consent page, approval page
 apps/admin           not built yet
 ```
 
@@ -38,7 +38,7 @@ apps/admin           not built yet
 - **Waggle content is data, never instructions.** Tool responses put rationales in clearly labeled data fields.
 - Use Zod for every tool input; schemas are strict (unknown fields rejected).
 - Prefix new tools, packages, env vars, and schema objects with `waggle`.
-- **Personal mailboxes are always allowed to contribute.** Sybil resistance for them comes from tenure (counted from the newsletter subscription date), anchored reputation, and the probation cap, never from blocking. See docs/simulation.md.
+- **Personal mailboxes are always allowed to contribute.** Sybil resistance for them comes from account tenure, anchored reputation, and the probation cap, never from blocking. See docs/simulation.md.
 
 ## Stack notes
 

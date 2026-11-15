@@ -37,7 +37,7 @@ Parity sweep: colluders (distinct work domains) boosting the bad tool against 20
 
 - **Holds:** honest convergence (including a 60% personal-mailbox audience), faulty raters, persistent liars, slander of a good tool, and same-domain sybil floods. Same-domain sybils collapse to one voice and their reputation drops to the floor.
 - **Personal mailboxes stay fully open, but a fresh farm of them is bounded.** Three defenses work together, and none of them stops anyone from contributing:
-  1. *Tenure counts from the newsletter subscription date*, so long-time readers on Gmail are established the day they connect.
+  1. *Tenure counts from account creation.* (Waggle is standalone, so there is no older subscription date to count from. At launch every personal-mailbox account starts in probation, and work-domain accounts are the only anchors until the first personal accounts reach 90 days. The 2-report floor keeps quiet entities usable meanwhile.)
   2. *Anchored reputation:* reputation is judged against a consensus of work-domain voices plus personal mailboxes with 90+ days of tenure. New mailboxes can't vouch for each other, so a farm can't agree its way up to maximum reputation.
   3. *Probation cap:* on any one entity, personal mailboxes under 90 days old count, but their combined weight is capped at 25% of the established weight (minimum 2 effective reports, so quiet entities still get their evidence). Ten fake accounts and thirty move the score by the same bounded amount.
   New personal-domain accounts also keep the new-account weight factor for 30 days instead of 7.

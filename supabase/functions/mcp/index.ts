@@ -46,7 +46,7 @@ const embedder: Embedder = {
 
 const deps = { db, embedder, approvalSecret: env("WAGGLE_APPROVAL_SECRET") };
 
-// Custom domain (e.g. https://waggle.superproductive.co/mcp). Unset = the default functions URL.
+// Custom domain for the MCP endpoint, if one is set up. Unset = the default functions URL.
 const publicUrl = Deno.env.get("WAGGLE_PUBLIC_URL");
 
 // Browsers send Origin; agents generally don't. Reject unexpected browser origins (DNS rebinding).
@@ -63,7 +63,7 @@ Deno.serve(
 
       const authUserId = ctx.userClaims?.id;
       if (!authUserId) return new Response("Unauthorized", { status: 401 });
-      // Subscribers are created on the connect/consent page after the newsletter check.
+      // Accounts are created on the consent page after magic-link sign-in.
       // An unknown user gets a clear tool error from the server ("not_connected").
       const subscriberId = (await db.subscriberForAuthUser(authUserId)) ?? "00000000-0000-0000-0000-000000000000";
       return handleMcpRequest(deps, subscriberId, req);

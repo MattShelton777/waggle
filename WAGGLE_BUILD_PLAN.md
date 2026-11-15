@@ -1,5 +1,7 @@
 # Waggle: Build Plan
 
+> **Changes since this plan was written (2026-11-15):** Waggle is now a standalone product, not tied to the Superproductive newsletter. Anyone with a verified email can connect (magic link via Supabase Auth); there is no subscriber check, and tenure counts from account creation. The site is hosted on GitHub Pages for testing. Hosting is Supabase Edge Functions + Supabase Auth's OAuth 2.1 server. Sections that mention the newsletter (§1, §7.1, §9.4, §10) are superseded where they conflict; see CLAUDE.md and docs/deploy.md for the current setup.
+>
 > Handoff document for a Claude Code session. Read this whole file before writing code.
 > Owner: Matt (Superproductive newsletter, superproductive.co).
 > Stack: new GitHub repo + new, dedicated Supabase project.

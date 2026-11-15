@@ -47,9 +47,9 @@ export const TOOL_TEXT = {
       "Use when: you're deciding whether to rely on a specific finding from waggle_check or waggle_discover.",
   },
   waggle_playbooks: {
-    title: "Search Superproductive playbooks",
+    title: "Search Waggle playbooks",
     description:
-      "Search Superproductive newsletter playbooks: the methods and reasoning behind Waggle findings. " +
+      "Search Waggle playbooks: written methods and reasoning behind Waggle findings. " +
       "Use when: you need the how-to behind a tactic or workflow, not just its score.",
   },
   waggle_log_use: {

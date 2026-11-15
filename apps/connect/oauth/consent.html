@@ -12,14 +12,14 @@
 <main>
   <div class="brand">
     <svg viewBox="0 0 40 22" aria-hidden="true"><path d="M20 11c-4-6-14-6-14 0s10 6 14 0 14-6 14 0-10 6-14 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="31" cy="6.5" r="2.6" fill="currentColor"/></svg>
-    <div>Waggle<small>by Superproductive</small></div>
+    <div>Waggle</div>
   </div>
 
   <section id="loading"><p class="muted">Loading…</p></section>
 
   <section id="signin" hidden>
     <h1>Sign in to connect your agent</h1>
-    <p class="lede">Enter the email you subscribe to Superproductive with. We'll send a one-time sign-in link.</p>
+    <p class="lede">Enter your email and we'll send a one-time sign-in link. New here? This creates your Waggle account.</p>
     <div class="card">
       <form class="inline" id="signin-form">
         <input type="email" required autocomplete="email" placeholder="you@company.com" aria-label="Email" />
@@ -44,7 +44,7 @@
     <div class="card">
       <h2>Your contribution policy</h2>
       <div id="policy"></div>
-      <p class="muted">You can change this any time on the Waggle connect page.</p>
+      <p class="muted">You can change this any time on the Waggle homepage.</p>
     </div>
     <div class="actions">
       <button id="approve">Connect</button>
@@ -84,12 +84,9 @@
       return;
     }
 
-    // Confirm the subscription and create/link the Waggle account.
+    // Create or link the Waggle account.
     const link = await api("/link");
-    if (!link.ok) {
-      const msg = link.data.message ?? "We couldn't verify your subscription.";
-      return problem("Subscribers only", escapeHtml(msg) + ` <a href="${window.WAGGLE_CONFIG.subscribeUrl}">Subscribe to Superproductive</a>.`);
-    }
+    if (!link.ok) return problem("We couldn't set up your account", escapeHtml(link.data.message ?? "Try again in a moment."));
 
     const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
     if (error) return problem("This request has expired", "Go back to your AI app and connect Waggle again.");

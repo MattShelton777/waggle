@@ -6,56 +6,37 @@ import { vector } from "@electric-sql/pglite-pgvector";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   approvalToken,
-  beehiivProvider,
-  checkSubscriber,
   decideApproval,
   getAccount,
   linkAccount,
   setPolicy,
   WaggleDb,
   type ConnectDeps,
-  type NewsletterProvider,
 } from "../src";
 
 const migrations = join(import.meta.dirname, "..", "..", "..", "supabase", "migrations");
 let pg: PGlite;
 let deps: ConnectDeps;
 
-const subscribers: Record<string, Date> = {
-  "reader@gmail.com": new Date("2024-03-01T00:00:00Z"),
-  "ops@acme-co.com": new Date("2025-06-01T00:00:00Z"),
-};
-const fakeNewsletter: NewsletterProvider = {
-  async lookup(email) {
-    const at = subscribers[email.toLowerCase()];
-    return { active: !!at, subscribedAt: at ?? null };
-  },
-};
-
 beforeAll(async () => {
   pg = await PGlite.create({ extensions: { vector, pg_trgm } });
   for (const f of readdirSync(migrations).filter((f) => f.endsWith(".sql")).sort()) await pg.exec(readFileSync(join(migrations, f), "utf8"));
   const db = new WaggleDb(async (text, params) => (await pg.query<Record<string, unknown>>(text, params)).rows);
-  deps = { db, newsletter: fakeNewsletter, subscribeUrl: "https://superproductive.co" };
+  deps = { db };
 });
 
 describe("connect routes", () => {
-  it("tells non-subscribers to subscribe before sending a magic link", async () => {
-    expect((await checkSubscriber(deps, "reader@gmail.com")).body).toEqual({ subscribed: true });
-    expect((await checkSubscriber(deps, "stranger@example.com")).body).toMatchObject({ subscribed: false, subscribe_url: "https://superproductive.co" });
-    expect((await checkSubscriber(deps, "not-an-email")).status).toBe(400);
-  });
-
-  it("links a verified subscriber with newsletter tenure and personal-domain flag", async () => {
+  it("creates an account for any verified email, flagging personal domains", async () => {
     const user = { id: crypto.randomUUID(), email: "Reader@Gmail.com" };
     const r = await linkAccount(deps, user, "ask_always");
     expect(r.status).toBe(200);
     expect(r.body.policy).toBe("ask_always");
-    const row = (await pg.query<{ is_personal_domain: boolean; newsletter_subscribed_at: Date; reputation: string; auth_user_id: string }>(
+    const row = (await pg.query<{ is_personal_domain: boolean; newsletter_subscribed_at: Date | null; reputation: string; auth_user_id: string }>(
       "select is_personal_domain, newsletter_subscribed_at, reputation, auth_user_id from waggle.subscribers where email = 'reader@gmail.com'",
     )).rows[0]!;
     expect(row.is_personal_domain).toBe(true);
-    expect(row.newsletter_subscribed_at.toISOString()).toBe("2024-03-01T00:00:00.000Z");
+    // Standalone: tenure counts from account creation.
+    expect(row.newsletter_subscribed_at).toBeNull();
     expect(Number(row.reputation)).toBe(0.7);
     expect(row.auth_user_id).toBe(user.id);
 
@@ -63,12 +44,6 @@ describe("connect routes", () => {
     const again = await linkAccount(deps, user, undefined);
     expect(again.body.subscriber_id).toBe(r.body.subscriber_id);
     expect(again.body.policy).toBe("ask_always");
-  });
-
-  it("refuses to link non-subscribers", async () => {
-    const r = await linkAccount(deps, { id: crypto.randomUUID(), email: "stranger@example.com" }, undefined);
-    expect(r.status).toBe(403);
-    expect(r.body.error).toBe("not_subscribed");
   });
 
   it("validates and saves the contribution policy", async () => {
@@ -105,23 +80,5 @@ describe("connect routes", () => {
     expect((await decideApproval(deps, token, "discard")).body.status).toBe("already_decided");
     const entity = (await pg.query<{ status: string }>("select status from waggle.entities where slug = 'test-tool'")).rows[0]!;
     expect(entity.status).toBe("active");
-  });
-});
-
-describe("beehiiv provider", () => {
-  const fakeFetch = (status: number, body: unknown) => (async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch;
-
-  it("maps active subscriptions and their start date", async () => {
-    const p = beehiivProvider("key", "pub_1", fakeFetch(200, { data: { status: "active", created: 1709251200 } }));
-    expect(await p.lookup("A@B.com")).toEqual({ active: true, subscribedAt: new Date(1709251200 * 1000) });
-  });
-
-  it("treats inactive or missing subscribers as not active", async () => {
-    expect((await beehiivProvider("k", "p", fakeFetch(200, { data: { status: "inactive" } })).lookup("a@b.com")).active).toBe(false);
-    expect((await beehiivProvider("k", "p", fakeFetch(404, {})).lookup("a@b.com")).active).toBe(false);
-  });
-
-  it("throws on API errors rather than locking people out silently", async () => {
-    await expect(beehiivProvider("k", "p", fakeFetch(500, {})).lookup("a@b.com")).rejects.toThrow(/500/);
   });
 });

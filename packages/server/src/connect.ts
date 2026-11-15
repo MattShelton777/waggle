@@ -1,17 +1,14 @@
 import { CONTRIBUTION_POLICIES, isPersonalDomain, emailDomain, type ContributionPolicy } from "@waggle/core";
 import type { WaggleDb } from "./db";
-import type { NewsletterProvider } from "./newsletter";
 import { approvalTokenHashFromToken } from "./write-tools";
 
 // Server routes behind the connect/consent pages (§1, §6.4, §7.1).
-// The caller verifies the Supabase Auth session; email always comes from the
-// verified token, never from the request body.
+// Waggle is standalone: anyone with a verified email can connect. The caller
+// verifies the Supabase Auth session; email always comes from the verified
+// token, never from the request body.
 
 export interface ConnectDeps {
   db: WaggleDb;
-  newsletter: NewsletterProvider;
-  /** Where to send people who aren't subscribed yet. */
-  subscribeUrl: string;
 }
 
 export interface VerifiedUser {
@@ -24,32 +21,17 @@ export type ConnectResult = { status: number; body: Record<string, unknown> };
 const ok = (body: Record<string, unknown>): ConnectResult => ({ status: 200, body });
 const fail = (status: number, error: string, message: string): ConnectResult => ({ status, body: { error, message } });
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/**
- * Pre-check before sending a magic link, so non-subscribers are told to
- * subscribe instead of getting a sign-in email. The link step re-checks.
- */
-export async function checkSubscriber(deps: ConnectDeps, email: unknown): Promise<ConnectResult> {
-  if (typeof email !== "string" || !EMAIL.test(email.trim())) return fail(400, "invalid_email", "Enter a valid email address.");
-  const r = await deps.newsletter.lookup(email);
-  return ok(r.active ? { subscribed: true } : { subscribed: false, subscribe_url: deps.subscribeUrl });
-}
-
-/** After magic-link sign-in: confirm the subscription and create/link the Waggle subscriber. */
+/** After magic-link sign-in: create or link the Waggle account. Tenure starts now. */
 export async function linkAccount(deps: ConnectDeps, user: VerifiedUser, policy: unknown): Promise<ConnectResult> {
   if (!user.email) return fail(400, "no_email", "This sign-in has no email address.");
-  const r = await deps.newsletter.lookup(user.email);
-  if (!r.active)
-    return fail(403, "not_subscribed", "Waggle is for Superproductive subscribers. Subscribe with this email, then try again.");
-  const domain = emailDomain(user.email);
-  const subscriberId = await deps.db.ensureSubscriber(user.id, user.email, isPersonalDomain(domain), r.subscribedAt);
+  const subscriberId = await deps.db.ensureSubscriber(user.id, user.email, isPersonalDomain(emailDomain(user.email)), null);
+  const sub = await deps.db.getSubscriber(subscriberId);
+  if (sub?.banned) return fail(403, "banned", "This account can no longer use Waggle.");
   if (policy !== undefined) {
     const res = await setPolicy(deps, user, policy);
     if (res.status !== 200) return res;
   }
-  const sub = await deps.db.getSubscriber(subscriberId);
-  return ok({ subscriber_id: subscriberId, policy: sub?.policy ?? null });
+  return ok({ subscriber_id: subscriberId, policy: policy ?? sub?.policy ?? null });
 }
 
 export async function setPolicy(deps: ConnectDeps, user: VerifiedUser, policy: unknown): Promise<ConnectResult> {

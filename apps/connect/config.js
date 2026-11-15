@@ -5,7 +5,6 @@ window.WAGGLE_CONFIG = {
   supabaseUrl: "https://wckkmbdfqeqgrispgdbx.supabase.co",
   supabasePublishableKey: "sb_publishable_O5bjew9gqb6965mafS2E7g_l0KlHBCY",
   connectApi: "https://wckkmbdfqeqgrispgdbx.supabase.co/functions/v1/connect-api",
-  // Switch to https://waggle.superproductive.co/mcp once the custom domain is live.
+  // Switch to a custom domain (e.g. https://waggle.example.com/mcp) once one fronts the endpoint.
   mcpUrl: "https://wckkmbdfqeqgrispgdbx.supabase.co/functions/v1/mcp",
-  subscribeUrl: "https://superproductive.co",
 };

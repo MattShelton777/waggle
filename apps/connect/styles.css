@@ -97,3 +97,20 @@ details summary { cursor: pointer; font-weight: 600; }
 details p { margin-top: 8px; color: var(--muted); }
 .notice { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 15px; }
 footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
+
+/* Hero setup module */
+.setup { border-color: var(--accent); }
+.setup h2 { margin-bottom: 2px; }
+.chooser { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 16px; }
+.chooser button {
+  background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+  min-height: 52px; font-size: 16px;
+}
+.chooser button[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.chips button { background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 6px 12px; min-height: 36px; font-size: 14px; border-radius: 999px; }
+.chips button[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.button.big { width: 100%; min-height: 52px; font-size: 16px; margin-bottom: 12px; }
+.small { font-size: 14px; }
+code.inline { font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 1px 5px; }
+[data-platform-panel] .path { margin-bottom: 4px; }

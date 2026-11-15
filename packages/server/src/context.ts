@@ -35,7 +35,7 @@ export async function loadContext(deps: Deps, subscriberId: string): Promise<Req
   if (!subscriber) throw new WaggleError("not_connected", "This account isn't connected to Waggle. Reconnect the Waggle connector.");
   if (subscriber.banned) throw new WaggleError("banned", "This account can no longer use Waggle.");
   if (subscriber.newsletter_status !== "active")
-    throw new WaggleError("not_subscribed", "Waggle is for active Superproductive subscribers. Resubscribe, then reconnect the connector.");
+    throw new WaggleError("inactive", "This Waggle account is inactive. Reconnect the Waggle connector to reactivate it.");
   const cfg = resolveConfig(serverConfig.settings as Parameters<typeof resolveConfig>[0]);
   const now = deps.now?.() ?? new Date();
   const lastContribution = subscriber.last_accepted_contribution_at ? new Date(subscriber.last_accepted_contribution_at) : null;

@@ -19,11 +19,8 @@ export async function api(path, { method = "POST", body } = {}) {
   return { ok: res.ok, status: res.status, data: json };
 }
 
-/** Send a magic link after confirming the email is an active subscriber. */
+/** Send a one-time sign-in link. Any email can sign up. */
 export async function sendMagicLink(email, returnTo) {
-  const check = await api("/check", { body: { email } });
-  if (!check.ok) return { ok: false, message: check.data.message ?? "Couldn't check that email. Try again." };
-  if (!check.data.subscribed) return { ok: false, notSubscribed: true, subscribeUrl: check.data.subscribe_url ?? cfg.subscribeUrl };
   const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: returnTo } });
   if (error) return { ok: false, message: error.message };
   return { ok: true };
@@ -55,13 +52,11 @@ export function wireSignIn(form, status, returnTo) {
     const email = form.querySelector("input[type=email]").value.trim();
     const button = form.querySelector("button");
     button.disabled = true;
-    status.textContent = "Checking…";
+    status.textContent = "Sending…";
     const r = await sendMagicLink(email, returnTo);
     button.disabled = false;
     if (r.ok) {
       status.innerHTML = `Check <strong>${escapeHtml(email)}</strong> for a sign-in link. Open it in this browser.`;
-    } else if (r.notSubscribed) {
-      status.innerHTML = `Waggle is for Superproductive subscribers. <a href="${escapeAttr(r.subscribeUrl)}">Subscribe with this email</a>, then come back.`;
     } else {
       status.textContent = r.message;
     }
@@ -72,9 +67,6 @@ export function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 
-function escapeAttr(s) {
-  return /^https?:\/\//.test(s) ? escapeHtml(s) : "#";
-}
 
 export const POLICY_TEXT = {
   auto_low_risk: {

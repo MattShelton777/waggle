@@ -1,6 +1,6 @@
 # Deploying Waggle (Supabase)
 
-Hosting decision (2026-11-01): **Supabase Edge Functions + Supabase Auth's OAuth 2.1 server.** Supabase Auth provides dynamic client registration, PKCE, discovery metadata, token rotation, and magic-link sign-in out of the box, which is what MCP connectors need. The connect site is static and can live on any static host (Cloudflare Pages suggested, since you have an account).
+Hosting decision (2026-11-01): **Supabase Edge Functions + Supabase Auth's OAuth 2.1 server.** Supabase Auth provides dynamic client registration, PKCE, discovery metadata, token rotation, and magic-link sign-in out of the box, which is what MCP connectors need. The site is static and published by GitHub Pages for now.
 
 Status legend: ✅ done · ⬜ to do (you) · 🔁 repeat on every release.
 
@@ -21,17 +21,19 @@ create role waggle_api_login login password '<strong-password>' in role waggle_a
 
 Connection string: the project's **transaction-mode pooler** URL (Database → Connect → Transaction pooler), with user `waggle_api_login.wckkmbdfqeqgrispgdbx`.
 
-## 3. Host the connect site
+## 3. Host the site
 
-`apps/connect` is plain static files (no build step). Rebuild the skill zip first with `npm run build:skill`.
+`apps/connect` is plain static files (no build step), published by GitHub Pages.
 
-- ⬜ Cloudflare Pages: create a project from the GitHub repo, build command none, output directory `apps/connect`. Add the custom domain (suggested `waggle.superproductive.co`).
-- Pages serves `/oauth/consent` from `oauth/consent.html` automatically.
+- ✅ Pages enabled with GitHub Actions as the source; `.github/workflows/pages.yml` deploys `apps/connect` on every push to `main` that touches it.
+- Site: https://mattshelton777.github.io/waggle/ (consent page at `/waggle/oauth/consent`).
+- Run `npm run build:skill` after editing `skill/waggle`, and commit the zip.
+- Later: a custom domain (Pages → Custom domain) once the product has one.
 
 ## 4. Supabase Auth
 
-- ⬜ Authentication → URL Configuration: **Site URL** = the connect site origin (e.g. `https://waggle.superproductive.co`). Add `https://waggle.superproductive.co/**` to redirect URLs.
-- ⬜ Authentication → Sign In / Providers: Email enabled with magic links. Set custom SMTP (e.g. Resend) so sign-in emails come from Superproductive, and edit the magic-link template copy.
+- ⬜ Authentication → URL Configuration: **Site URL** = `https://mattshelton777.github.io/waggle`. Add `https://mattshelton777.github.io/waggle/**` to redirect URLs.
+- ⬜ Authentication → Sign In / Providers: Email enabled with magic links. Set custom SMTP (e.g. Resend) so sign-in emails come from a Waggle address (Supabase's built-in sender is rate-limited and for testing only), and edit the magic-link template copy.
 - ⬜ Authentication → OAuth Server: enable the OAuth 2.1 server, enable **dynamic client registration**, and set the **authorization path** to `/oauth/consent`.
 - ⬜ Confirm Claude's callback (`https://claude.ai/api/mcp/auth_callback`) and ChatGPT's current connector callback are accepted for dynamically registered clients.
 
@@ -41,15 +43,12 @@ Connection string: the project's **transaction-mode pooler** URL (Database → C
 npx supabase secrets set \
   WAGGLE_API_DB_URL='postgresql://waggle_api_login.wckkmbdfqeqgrispgdbx:<password>@<pooler-host>:6543/postgres' \
   WAGGLE_APPROVAL_SECRET='<random 32+ bytes>' \
-  WAGGLE_BEEHIIV_API_KEY='<beehiiv API key>' \
-  WAGGLE_BEEHIIV_PUBLICATION_ID='pub_d9d7bf1e-85c1-4625-9740-f21f2b182b61' \
-  WAGGLE_SITE_ORIGINS='https://waggle.superproductive.co' \
-  WAGGLE_SUBSCRIBE_URL='https://superproductive.co'
+  WAGGLE_SITE_ORIGINS='https://mattshelton777.github.io'
 # Once a custom domain fronts the MCP endpoint:
-npx supabase secrets set WAGGLE_PUBLIC_URL='https://waggle.superproductive.co/mcp'
+npx supabase secrets set WAGGLE_PUBLIC_URL='https://<your-domain>/mcp'
 ```
 
-The beehiiv publication is "The Superproductive Newsletter". Never set the service-role key on either function.
+Never set the service-role key on either function.
 
 ## 6. Deploy functions 🔁
 
@@ -63,7 +62,7 @@ Endpoints:
 - MCP: `https://wckkmbdfqeqgrispgdbx.supabase.co/functions/v1/mcp`
 - Connect API: `https://wckkmbdfqeqgrispgdbx.supabase.co/functions/v1/connect-api`
 
-If you later serve MCP from `waggle.superproductive.co/mcp`, update `mcpUrl` in `apps/connect/config.js` and set `WAGGLE_PUBLIC_URL`.
+If you later serve MCP from a custom domain, update `mcpUrl` in `apps/connect/config.js` and set `WAGGLE_PUBLIC_URL`.
 
 ## 7. Smoke test
 
