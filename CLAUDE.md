@@ -47,4 +47,4 @@ apps/admin           not built yet
 - The repo lives in Dropbox. Vitest's cache is redirected to the OS temp dir because Dropbox locks files under `node_modules`. Consider excluding `node_modules` from Dropbox sync.
 - Embeddings are `vector(384)` (Supabase gte-small); verify before relying on it.
 - Supabase CLI and Deno are not installed on this machine; migrations and the server are verified with PGlite, and the bundle is smoke-tested in Node.
-- Migrations are deployed to the Supabase project `waggle` (ref yoagtdkpsomjzauoxvxb). Never edit an applied migration; add a new file named with the version the project records.
+- Migrations are deployed to the Supabase project `Waggle` (ref wckkmbdfqeqgrispgdbx, us-west-2). Never edit an applied migration; add a new file named with the version the project records.

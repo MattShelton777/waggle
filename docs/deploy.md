@@ -6,10 +6,10 @@ Status legend: ✅ done · ⬜ to do (you) · 🔁 repeat on every release.
 
 ## 1. Project and database
 
-- ✅ Project `waggle` (ref `yoagtdkpsomjzauoxvxb`, us-east-1) in Matt's org.
+- ✅ Project `Waggle` (ref `wckkmbdfqeqgrispgdbx`, us-west-2), created 2026-11-15. It replaced the first project (`yoagtdkpsomjzauoxvxb`), which only ever held schema and seed data.
 - ✅ Migrations applied (5). Local files in `supabase/migrations` are named with the versions the project records.
 - ⬜ Enable backups / point-in-time recovery (Database → Backups) when you move to a paid plan.
-- ⬜ Install the Supabase CLI and run `npx supabase link --project-ref yoagtdkpsomjzauoxvxb` from the repo root.
+- ⬜ Install the Supabase CLI and run `npx supabase link --project-ref wckkmbdfqeqgrispgdbx` from the repo root.
 
 ## 2. The API database login
 
@@ -19,7 +19,7 @@ The functions connect as a login role that can only execute `waggle.api_*` funct
 create role waggle_api_login login password '<strong-password>' in role waggle_api;
 ```
 
-Connection string: the project's **transaction-mode pooler** URL (Database → Connect → Transaction pooler), with user `waggle_api_login.yoagtdkpsomjzauoxvxb`.
+Connection string: the project's **transaction-mode pooler** URL (Database → Connect → Transaction pooler), with user `waggle_api_login.wckkmbdfqeqgrispgdbx`.
 
 ## 3. Host the connect site
 
@@ -39,7 +39,7 @@ Connection string: the project's **transaction-mode pooler** URL (Database → C
 
 ```bash
 npx supabase secrets set \
-  WAGGLE_API_DB_URL='postgresql://waggle_api_login.yoagtdkpsomjzauoxvxb:<password>@<pooler-host>:6543/postgres' \
+  WAGGLE_API_DB_URL='postgresql://waggle_api_login.wckkmbdfqeqgrispgdbx:<password>@<pooler-host>:6543/postgres' \
   WAGGLE_APPROVAL_SECRET='<random 32+ bytes>' \
   WAGGLE_BEEHIIV_API_KEY='<beehiiv API key>' \
   WAGGLE_BEEHIIV_PUBLICATION_ID='pub_d9d7bf1e-85c1-4625-9740-f21f2b182b61' \
@@ -60,8 +60,8 @@ npm run deploy:functions
 Builds `supabase/functions/_shared/waggle.bundle.js` from `packages/server`, then deploys `mcp` and `connect-api` with gateway JWT checks off (both verify tokens in code).
 
 Endpoints:
-- MCP: `https://yoagtdkpsomjzauoxvxb.supabase.co/functions/v1/mcp`
-- Connect API: `https://yoagtdkpsomjzauoxvxb.supabase.co/functions/v1/connect-api`
+- MCP: `https://wckkmbdfqeqgrispgdbx.supabase.co/functions/v1/mcp`
+- Connect API: `https://wckkmbdfqeqgrispgdbx.supabase.co/functions/v1/connect-api`
 
 If you later serve MCP from `waggle.superproductive.co/mcp`, update `mcpUrl` in `apps/connect/config.js` and set `WAGGLE_PUBLIC_URL`.
 
