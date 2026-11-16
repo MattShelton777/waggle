@@ -15,7 +15,7 @@
     "check": "npm run typecheck && npm test",
     "build:functions": "node scripts/build-functions.mjs",
     "build:skill": "node scripts/build-skill.mjs",
-    "deploy:functions": "npm run build:functions && supabase functions deploy mcp --no-verify-jwt && supabase functions deploy connect-api --no-verify-jwt"
+    "deploy:functions": "npm run build:functions && npx supabase functions deploy mcp --no-verify-jwt --use-api && npx supabase functions deploy connect-api --no-verify-jwt --use-api"
   },
   "engines": {
     "node": ">=20"
