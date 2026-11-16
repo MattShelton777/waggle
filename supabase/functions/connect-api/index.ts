@@ -26,7 +26,16 @@ const env = (name: string) => {
   return v;
 };
 
-const sql = postgres(env("WAGGLE_API_DB_URL"), { prepare: false, max: 3, idle_timeout: 20 });
+// Validate the DB URL ourselves: postgres.js echoes an unparseable URL, password included, into the logs.
+const dbUrl = () => {
+  const v = env("WAGGLE_API_DB_URL");
+  if (!/^postgres(ql)?:\/\//.test(v) || !URL.canParse(v)) {
+    throw new Error("WAGGLE_API_DB_URL is not a valid postgresql:// URL (check for stray quotes or unencoded symbols in the password)");
+  }
+  return v;
+};
+
+const sql = postgres(dbUrl(), { prepare: false, max: 3, idle_timeout: 20 });
 const deps = {
   db: new WaggleDb((text: string, params?: unknown[]) => sql.unsafe(text, (params ?? []) as never[]) as never),
 };
