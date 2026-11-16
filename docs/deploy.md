@@ -34,10 +34,10 @@ Connection string (transaction pooler, port **6543**): `postgresql://waggle_api_
 
 ## 4. Supabase Auth
 
-- ⬜ Authentication → URL Configuration: **Site URL** = `https://mattshelton777.github.io/waggle`. Add `https://mattshelton777.github.io/waggle/**` to redirect URLs.
+- ✅ Authentication → URL Configuration: **Site URL** = `https://mattshelton777.github.io/waggle`. Add `https://mattshelton777.github.io/waggle/**` to redirect URLs.
 - ⬜ Authentication → Sign In / Providers: Email enabled with magic links. Set custom SMTP (e.g. Resend) so sign-in emails come from a Waggle address (Supabase's built-in sender is rate-limited and for testing only), and edit the magic-link template copy.
-- ✅ OAuth 2.1 server on with dynamic client registration (verified via the discovery endpoint). ⬜ Confirm the **authorization path** is `/oauth/consent` and the Site URL is the Pages URL; the first real connection will test both.
-- ⬜ Confirm Claude's callback (`https://claude.ai/api/mcp/auth_callback`) and ChatGPT's current connector callback are accepted for dynamically registered clients.
+- ✅ OAuth 2.1 server on with dynamic client registration and authorization path `/oauth/consent`. First real connection from Claude (sign-up, consent, connector) succeeded 2026-11-15.
+- ✅ Claude's callback works with dynamically registered clients. ⬜ Test ChatGPT (Developer mode) the same way.
 
 ## 5. Function secrets
 
