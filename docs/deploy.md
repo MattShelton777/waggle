@@ -29,7 +29,7 @@ Connection string (transaction pooler, port **6543**): `postgresql://waggle_api_
 
 - ✅ Pages enabled with GitHub Actions as the source; `.github/workflows/pages.yml` deploys `apps/connect` on every push to `main` that touches it.
 - Site: https://mattshelton777.github.io/waggle/ (consent page at `/waggle/oauth/consent`).
-- Run `npm run build:skill` after editing `skill/waggle`, and commit the zip.
+- Run `npm run build:skill` after editing `plugins/waggle/skills/waggle`, and commit the zip.
 - Later: a custom domain (Pages → Custom domain) once the product has one.
 
 ## 4. Supabase Auth

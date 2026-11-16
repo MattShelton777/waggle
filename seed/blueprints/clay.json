@@ -1,0 +1,142 @@
+{
+  "vendor_domains": [
+    "clay.com"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "clay",
+    "summary": "List building and enrichment that chains data providers and AI steps in one table. Credits climb with wide waterfalls, so table design decides cost.",
+    "use_when": [
+      "You need to enrich a list from several providers",
+      "You want AI steps on each row"
+    ],
+    "avoid_when": [
+      "One provider covers the fields you need"
+    ],
+    "inputs": [
+      {
+        "name": "records",
+        "kind": "csv",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "enriched_table",
+        "format": "table"
+      }
+    ],
+    "setup": [
+      {
+        "do": "Connect your own provider keys where you have them; this removes that provider's data credit cost.",
+        "source": "docs"
+      },
+      {
+        "do": "Check the plan before relying on HTTP API, webhooks or CRM sync: they start on Growth.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Import records and run the cheapest provider first.",
+        "tool": "clay",
+        "settings": {},
+        "source": "inferred"
+      },
+      {
+        "n": 2,
+        "do": "Gate each later step with a condition so it runs only on rows still missing the field.",
+        "tool": "clay",
+        "settings": {
+          "run_condition": "field is empty"
+        },
+        "gotchas": [
+          "Unconditioned waterfall steps run on every row"
+        ],
+        "source": "first_hand"
+      },
+      {
+        "n": 3,
+        "do": "Run AI steps last, on the rows that passed the earlier filters.",
+        "tool": "clay",
+        "settings": {},
+        "source": "inferred"
+      }
+    ],
+    "thresholds": [],
+    "pitfalls": [
+      {
+        "issue": "Wide waterfalls burn credits",
+        "fix": "Order providers cheapest first and stop once a field is found",
+        "source": "first_hand"
+      },
+      {
+        "issue": "Every enrichment still uses one Action even with your own key",
+        "fix": "Filter rows before enrichment, not after",
+        "source": "docs"
+      }
+    ],
+    "quality_bar": [
+      "Later steps conditioned on earlier results"
+    ],
+    "cost": {
+      "band": "250_1k",
+      "per": "month",
+      "drivers": [
+        "Actions per record",
+        "Data credits per enrichment",
+        "AI token spend"
+      ],
+      "free_alternatives": [],
+      "source": "inferred"
+    },
+    "limits": [
+      {
+        "what": "Actions",
+        "note": "Cannot be topped up one-off and do not roll over",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Actions & Data Credits",
+        "url": "https://university.clay.com/docs/actions-data-credits",
+        "covers": [
+          "concepts",
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Credit usage",
+        "url": "https://university.clay.com/docs/credit-usage",
+        "covers": [
+          "concepts",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Clay pricing",
+        "url": "https://www.clay.com/pricing",
+        "covers": [
+          "pricing"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Plan prices",
+      "Data credits per provider"
+    ],
+    "related": [
+      "signal-to-sequence"
+    ],
+    "evidence": {
+      "first_hand_runs": "1",
+      "last_first_hand": "2026-11"
+    }
+  }
+}

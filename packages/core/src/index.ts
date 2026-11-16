@@ -10,3 +10,4 @@ export * from "./readout";
 export * from "./reputation";
 export * from "./access";
 export * from "./voice";
+export * from "./blueprint";

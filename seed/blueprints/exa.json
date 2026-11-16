@@ -1,0 +1,128 @@
+{
+  "vendor_domains": [
+    "exa.ai"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "exa",
+    "summary": "Search API built for agents, with search, contents and an async agent endpoint. Fits signal detection such as finding hiring or launch pages for a list of companies.",
+    "use_when": [
+      "You need web results or page contents inside an automation"
+    ],
+    "avoid_when": [
+      "A single manual search would do"
+    ],
+    "inputs": [
+      {
+        "name": "query",
+        "kind": "text",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "results",
+        "format": "records",
+        "fields": [
+          "title",
+          "url",
+          "published_date"
+        ]
+      }
+    ],
+    "setup": [
+      {
+        "do": "Create an API key and use the official Python or JavaScript SDK.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Search for the signal, then fetch contents only for the results you keep.",
+        "tool": "exa",
+        "settings": {
+          "num_results": 10
+        },
+        "gotchas": [
+          "Contents are billed per page"
+        ],
+        "source": "inferred"
+      }
+    ],
+    "thresholds": [
+      {
+        "name": "Results covered by the base search price",
+        "value": "10",
+        "why": "More results cost more",
+        "source": "docs"
+      }
+    ],
+    "pitfalls": [
+      {
+        "issue": "Fetching contents for every result",
+        "fix": "Filter on titles and dates first",
+        "source": "inferred"
+      }
+    ],
+    "quality_bar": [],
+    "cost": {
+      "band": "lt_50",
+      "per": "month",
+      "drivers": [
+        "Searches",
+        "Pages fetched"
+      ],
+      "free_alternatives": [
+        "The free monthly credit"
+      ],
+      "source": "inferred"
+    },
+    "limits": [
+      {
+        "what": "Rate limits",
+        "note": "Queries per second per endpoint, lower for deep search",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Developer quickstart",
+        "url": "https://exa.ai/docs/get-started/quickstart",
+        "covers": [
+          "api",
+          "setup"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Exa pricing",
+        "url": "https://exa.ai/pricing",
+        "covers": [
+          "pricing"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Rate Limits",
+        "url": "https://exa.ai/docs/reference/rate-limits",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Price per thousand searches and pages",
+      "Free monthly credit",
+      "Rate limits"
+    ],
+    "related": [
+      "signal-to-sequence"
+    ],
+    "evidence": {
+      "first_hand_runs": "0",
+      "last_first_hand": null
+    }
+  }
+}

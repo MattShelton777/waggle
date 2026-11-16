@@ -1,0 +1,130 @@
+{
+  "vendor_domains": [
+    "smartlead.ai"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "smartlead",
+    "summary": "Cold email sending with mailbox warmup and an API for campaigns. Warmup and slow ramps decide deliverability more than copy does.",
+    "use_when": [
+      "You run cold email from several mailboxes"
+    ],
+    "avoid_when": [
+      "Mailboxes or domains are brand new and cannot wait for warmup"
+    ],
+    "inputs": [
+      {
+        "name": "leads",
+        "kind": "csv",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "campaign",
+        "format": "text"
+      }
+    ],
+    "setup": [
+      {
+        "do": "Check the plan: API access starts on Pro.",
+        "source": "docs"
+      },
+      {
+        "do": "Pass the API key as a query parameter; headers are not accepted.",
+        "source": "docs"
+      },
+      {
+        "do": "Warm new mailboxes before any campaign, longer for new domains.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Start campaigns at a low daily lead count and ramp slowly, with warmup still running.",
+        "tool": "smartlead",
+        "settings": {
+          "warmup": true
+        },
+        "source": "docs"
+      }
+    ],
+    "thresholds": [
+      {
+        "name": "Minimum warmup for new mailboxes",
+        "value": "14 days",
+        "why": "Shorter warmup risks deliverability",
+        "source": "docs"
+      },
+      {
+        "name": "Warmup for new domains",
+        "value": "21 to 30 days",
+        "why": "New domains need longer to build reputation",
+        "source": "docs"
+      },
+      {
+        "name": "New-account warmup volume",
+        "value": "about 40 emails per day",
+        "why": "Keeps early volume believable",
+        "source": "docs"
+      }
+    ],
+    "pitfalls": [
+      {
+        "issue": "Endpoint-specific 429 responses carry no Retry-After header",
+        "fix": "Use a fixed backoff of up to 60 seconds",
+        "source": "docs"
+      }
+    ],
+    "quality_bar": [
+      "Every mailbox warmed before launch"
+    ],
+    "limits": [
+      {
+        "what": "Rate limits",
+        "note": "Per key, per minute and per hour, stricter on heavy stats endpoints",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "How to get started with the Smartlead API",
+        "url": "https://helpcenter.smartlead.ai/en/articles/68-how-to-get-started-with-the-smartlead-api",
+        "covers": [
+          "setup",
+          "api"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Rate Limits Guide",
+        "url": "https://api.smartlead.ai/guides/rate-limits",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Email Warmup Guide",
+        "url": "https://api.smartlead.ai/guides/email-warmup",
+        "covers": [
+          "concepts",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Plan needed for API access",
+      "Rate limits"
+    ],
+    "related": [
+      "signal-to-sequence"
+    ],
+    "evidence": {
+      "first_hand_runs": "0",
+      "last_first_hand": null
+    }
+  }
+}

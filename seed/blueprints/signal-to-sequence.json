@@ -1,0 +1,224 @@
+{
+  "vendor_domains": [
+    "exa.ai",
+    "clay.com",
+    "smartlead.ai"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "signal-to-sequence",
+    "summary": "Detects a public trigger such as hiring or a launch, writes a first line that references it, and enrolls the contact in a sequence. Not yet run first-hand in Waggle: every line is from docs or inferred.",
+    "use_when": [
+      "You have a target account list and a trigger that signals need",
+      "Mailboxes are already warmed"
+    ],
+    "avoid_when": [
+      "Mailboxes are new",
+      "The trigger is too common to mean anything"
+    ],
+    "inputs": [
+      {
+        "name": "accounts",
+        "kind": "csv",
+        "required": true
+      },
+      {
+        "name": "signal",
+        "kind": "text",
+        "required": true,
+        "note": "For example a hiring post for a given role"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "enrolled_contacts",
+        "format": "csv",
+        "fields": [
+          "account",
+          "signal",
+          "first_line",
+          "contact",
+          "sequence"
+        ]
+      }
+    ],
+    "setup": [
+      {
+        "do": "Warm every sending mailbox before the first campaign.",
+        "source": "docs"
+      },
+      {
+        "do": "Confirm the Clay plan includes the integrations the push to the sender needs.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Search for the signal per account and keep only recent, specific matches.",
+        "tool": "exa",
+        "settings": {},
+        "gotchas": [
+          "Fetch page contents only for kept results"
+        ],
+        "source": "inferred"
+      },
+      {
+        "n": 2,
+        "do": "Find and verify a contact at each account with a signal, running providers only on rows that need them.",
+        "tool": "clay",
+        "settings": {
+          "run_condition": "signal found"
+        },
+        "source": "inferred"
+      },
+      {
+        "n": 3,
+        "do": "Write a first line that names the signal plainly, then review a sample by hand.",
+        "tool": "clay",
+        "settings": {},
+        "source": "inferred"
+      },
+      {
+        "n": 4,
+        "do": "Enroll contacts at a low daily volume with warmup still on.",
+        "tool": "smartlead",
+        "settings": {},
+        "source": "docs"
+      }
+    ],
+    "thresholds": [
+      {
+        "name": "Minimum mailbox warmup",
+        "value": "14 days",
+        "why": "Shorter warmup risks deliverability",
+        "source": "docs"
+      }
+    ],
+    "pitfalls": [
+      {
+        "issue": "Running enrichment on accounts with no signal",
+        "fix": "Gate enrichment on a found signal",
+        "source": "inferred"
+      },
+      {
+        "issue": "Generic first lines that only restate the signal",
+        "fix": "Say why the signal matters to them in one clause",
+        "source": "inferred"
+      }
+    ],
+    "quality_bar": [
+      "Every enrolled contact has a dated signal",
+      "A hand-reviewed sample of first lines"
+    ],
+    "cost": {
+      "band": "250_1k",
+      "per": "month",
+      "drivers": [
+        "Enrichment credits",
+        "Search volume",
+        "Sending plan"
+      ],
+      "free_alternatives": [],
+      "source": "inferred"
+    },
+    "time": {
+      "setup": "1_day",
+      "per_run": "1_4h"
+    },
+    "limits": [],
+    "docs": [
+      {
+        "title": "Developer quickstart",
+        "url": "https://exa.ai/docs/get-started/quickstart",
+        "covers": [
+          "api",
+          "setup"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Exa pricing",
+        "url": "https://exa.ai/pricing",
+        "covers": [
+          "pricing"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Rate Limits",
+        "url": "https://exa.ai/docs/reference/rate-limits",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Actions & Data Credits",
+        "url": "https://university.clay.com/docs/actions-data-credits",
+        "covers": [
+          "concepts",
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Credit usage",
+        "url": "https://university.clay.com/docs/credit-usage",
+        "covers": [
+          "concepts",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Clay pricing",
+        "url": "https://www.clay.com/pricing",
+        "covers": [
+          "pricing"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "How to get started with the Smartlead API",
+        "url": "https://helpcenter.smartlead.ai/en/articles/68-how-to-get-started-with-the-smartlead-api",
+        "covers": [
+          "setup",
+          "api"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Rate Limits Guide",
+        "url": "https://api.smartlead.ai/guides/rate-limits",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Email Warmup Guide",
+        "url": "https://api.smartlead.ai/guides/email-warmup",
+        "covers": [
+          "concepts",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Clay plan gates",
+      "Exa and Smartlead rate limits"
+    ],
+    "related": [
+      "exa",
+      "clay",
+      "smartlead"
+    ],
+    "evidence": {
+      "first_hand_runs": "0",
+      "last_first_hand": null
+    }
+  }
+}

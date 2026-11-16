@@ -196,14 +196,6 @@ export const InspectShape = {
 export const InspectInputSchema = z.strictObject(InspectShape);
 export type InspectInput = z.infer<typeof InspectInputSchema>;
 
-export const PlaybooksShape = {
-  query: z.string().min(2).max(LIMITS.query),
-  limit: z.number().int().min(1).max(10).optional(),
-  rules_version_seen: z.number().int().nonnegative().optional(),
-};
-export const PlaybooksInputSchema = z.strictObject(PlaybooksShape);
-export type PlaybooksInput = z.infer<typeof PlaybooksInputSchema>;
-
 export const OpenTestsShape = {
   include: z.enum(["due", "open", "all"]).optional(),
   rules_version_seen: z.number().int().nonnegative().optional(),

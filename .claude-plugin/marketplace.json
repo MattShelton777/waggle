@@ -1,0 +1,11 @@
+{
+  "name": "waggle",
+  "owner": { "name": "Waggle" },
+  "plugins": [
+    {
+      "name": "waggle",
+      "source": "./plugins/waggle",
+      "description": "The Waggle connector plus the skill for pulling what works, reading blueprints and reporting back."
+    }
+  ]
+}

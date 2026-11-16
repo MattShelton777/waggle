@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "waggle": {
+      "type": "http",
+      "url": "https://wckkmbdfqeqgrispgdbx.supabase.co/functions/v1/mcp"
+    }
+  }
+}

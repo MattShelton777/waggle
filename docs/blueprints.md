@@ -1,4 +1,4 @@
-# Blueprints (proposal, not built)
+# Blueprints
 
 Run 1 of the user test showed that Waggle's entries name a tool or a list of steps but don't say how to use them, so agents read the entry and then searched the web anyway. A blueprint is the structured how-to that sits on a tool or workflow entry. It is meant to make an agent's documentation lookup short and targeted, not to replace it.
 
@@ -48,14 +48,17 @@ Today Waggle content may hold no numbers, names or URLs. Blueprints need three n
 `scrubReport` gets a blueprint mode that enforces this. Injection patterns still quarantine.
 
 ## Storage
-- A new append-only table, `waggle.blueprints` (entity_id, version, body jsonb, contributed_by, status, created_at), with a view that picks the current accepted version. No updates or deletes, in line with the events rule.
-- `api_get_blueprint(entity_id)`. `waggle_inspect` returns `blueprint_data`, plus a short `docs_step_data` that names the pages and facts to re-check.
-- The blueprint summary and steps are embedded, so `check` and `discover` match on how-to text, not just ratings.
-- v1: blueprints are seeded by migration, curated with the operator. v2: `waggle_report` takes an optional blueprint suggestion, which goes to moderation as pending.
+- `waggle.blueprints` (entity_id, version, body jsonb, origin curated|contributed, status accepted|pending|rejected, contributed_by, created_at) is append-only: a change is a new version. Migration `20261116190000_waggle_blueprints.sql`.
+- `waggle.current_blueprints` picks the latest accepted version, for tools and workflows only.
+- `api_get_blueprint(entity_id)` returns `{version, updated_at, body}`; `api_blueprint_entity_ids()` lets check and discover set `has_blueprint`.
+- `waggle_inspect` returns `blueprint_data` and a short `docs_step` that names the pages and facts to re-check.
+- Docs links are allowed only on the entity's `attributes.vendor_domains` (subdomains included); `packages/core/src/blueprint.ts` holds the schema and the blueprint scrub mode.
 
-## What gets built after a yes
-1. Migration: table, view, `api_get_blueprint`, `vendor_domain`.
-2. Core: a Zod schema for the format, and the blueprint scrub mode.
-3. Server: `inspect` returns the blueprint; check and discover use its embedding.
-4. Skill: SKILL.md gets the five-step flow above.
-5. Seed blueprints for the 9 entries with first-hand ratings, from the operator's own notes plus official docs.
+## Seeding
+- Seed files live in `seed/blueprints/<slug>.json` as `{ "vendor_domains": [...], "blueprint": {...} }`. The core tests validate every file.
+- `node scripts/blueprint-seed.mjs supabase/migrations/<version>_waggle_seed_blueprints.sql` writes the migration; `supabase/test/blueprint-seed.test.ts` fails if the committed file and the JSON drift. To change a seeded blueprint, edit the JSON and write a new migration with a new version (each run appends a version).
+- The first seed (2026-11-16) covers 12 entries. `first_hand` lines come only from the operator's own ratings; `docs` lines come from official pages checked that day; the rest are `inferred`. perplexity, exa, smartlead and signal-to-sequence have no first-hand use yet (`first_hand_runs: "0"`).
+
+## Not built yet
+- Embedding the blueprint summary and steps for check and discover.
+- Contributed blueprints: `waggle_report` taking an optional blueprint suggestion that lands as `pending` for moderation.

@@ -1,0 +1,138 @@
+{
+  "vendor_domains": [
+    "claude.com"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "claude-code",
+    "summary": "Coding agent for personal GTM automations such as SEO scripts, outreach sequencers, static sites and list analysis. Works best when business rules are written up front.",
+    "use_when": [
+      "You want a custom script or small tool instead of another SaaS",
+      "The rules of the job can be written down"
+    ],
+    "avoid_when": [
+      "Nobody will review what it sends, deletes or changes in live accounts"
+    ],
+    "inputs": [
+      {
+        "name": "business_rules",
+        "kind": "text",
+        "required": true,
+        "note": "Definitions, thresholds and what counts as done"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "automation",
+        "format": "text",
+        "note": "Script, site or analysis plus how to run it"
+      }
+    ],
+    "setup": [
+      {
+        "do": "Write the business rules into a project file or skill before the first build.",
+        "source": "first_hand"
+      },
+      {
+        "do": "Check whether an API key is set in the environment, since it overrides the subscription and bills at API rates.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "State the rules, inputs and expected output in the first message or a project file.",
+        "tool": "claude-code",
+        "settings": {},
+        "source": "first_hand"
+      },
+      {
+        "n": 2,
+        "do": "Build and test on sample data.",
+        "tool": "claude-code",
+        "settings": {},
+        "source": "inferred"
+      },
+      {
+        "n": 3,
+        "do": "Review anything that sends, deletes or touches live accounts before it runs.",
+        "tool": null,
+        "settings": {},
+        "source": "first_hand"
+      }
+    ],
+    "thresholds": [],
+    "pitfalls": [
+      {
+        "issue": "Vague rules produce plausible but wrong automations",
+        "fix": "Write rules and definitions before building",
+        "source": "first_hand"
+      },
+      {
+        "issue": "Long sessions and many MCP servers drive token cost",
+        "fix": "Clear context between tasks and pick a smaller model for simple work",
+        "source": "docs"
+      }
+    ],
+    "quality_bar": [
+      "Rules written down",
+      "Human review before any live send or delete"
+    ],
+    "cost": {
+      "band": "lt_50",
+      "per": "month",
+      "drivers": [
+        "Subscription tier or API token use",
+        "Context size"
+      ],
+      "free_alternatives": [],
+      "source": "inferred"
+    },
+    "limits": [
+      {
+        "what": "Subscription usage",
+        "note": "Shared with Claude chat; a rolling session limit plus a weekly limit",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Claude Code overview",
+        "url": "https://code.claude.com/docs/en/overview",
+        "covers": [
+          "setup",
+          "concepts"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Manage costs effectively",
+        "url": "https://code.claude.com/docs/en/costs",
+        "covers": [
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Use Claude Code with your Pro, Max, or Ultra plan",
+        "url": "https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan",
+        "covers": [
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Current plan usage limits"
+    ],
+    "related": [
+      "supabase"
+    ],
+    "evidence": {
+      "first_hand_runs": "1",
+      "last_first_hand": "2026-11"
+    }
+  }
+}

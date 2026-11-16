@@ -6,12 +6,11 @@ import {
   InspectInputSchema,
   LogUseInputSchema,
   OpenTestsInputSchema,
-  PlaybooksInputSchema,
   ReportInputSchema,
 } from "@waggle/core";
 import type { ZodType } from "zod";
 import { buildNotices, loadContext, WaggleError, type Deps, type RequestContext } from "./context";
-import { check, discover, getRules, inspect, openTests, playbooks } from "./read-tools";
+import { check, discover, getRules, inspect, openTests } from "./read-tools";
 import { SERVER_INSTRUCTIONS, SERVER_NAME, SERVER_VERSION, TOOL_TEXT } from "./text";
 import { timedEmbedder, TOOL_TIMEOUT_MS, WaggleTimeout, withTimeout } from "./timeouts";
 import { logUse, report } from "./write-tools";
@@ -101,7 +100,6 @@ export function buildServer(rawDeps: Deps, subscriberId: string, toolTimeoutMs =
   reg("waggle_check", CheckInputSchema, READ_ONLY, check);
   reg("waggle_discover", DiscoverInputSchema, READ_ONLY, discover);
   reg("waggle_inspect", InspectInputSchema, READ_ONLY, inspect);
-  reg("waggle_playbooks", PlaybooksInputSchema, READ_ONLY, playbooks);
   reg("waggle_open_tests", OpenTestsInputSchema, READ_ONLY, openTests);
   reg("waggle_log_use", LogUseInputSchema, APPEND_ONLY, logUse);
   reg("waggle_report", ReportInputSchema, APPEND_ONLY, (c, a) => report(c, a) as Promise<Record<string, unknown>>);

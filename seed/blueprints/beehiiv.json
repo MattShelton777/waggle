@@ -1,0 +1,145 @@
+{
+  "vendor_domains": [
+    "beehiiv.com"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "beehiiv",
+    "summary": "Newsletter platform for sending, subscriber management, segments and growth stats. Subscriber-level history makes it possible to see which signup cohorts unsubscribe.",
+    "use_when": [
+      "You run a newsletter and want cohort-level subscriber analysis",
+      "You need segments or growth stats"
+    ],
+    "avoid_when": [
+      "You need deep cohort analysis inside the dashboard alone: plan an export or API pull"
+    ],
+    "inputs": [
+      {
+        "name": "publication",
+        "kind": "text",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "subscriber_cohorts",
+        "format": "table",
+        "fields": [
+          "signup_period",
+          "active",
+          "unsubscribed"
+        ]
+      }
+    ],
+    "setup": [
+      {
+        "do": "Create an API key under Workspace Settings > API; it is shown once and sent as a Bearer token.",
+        "source": "docs"
+      },
+      {
+        "do": "Restrict the key to one publication if the workspace has several.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Pull subscriber history with signup dates and status.",
+        "tool": "beehiiv",
+        "settings": {
+          "limit": 100
+        },
+        "gotchas": [
+          "List endpoints page at up to 100 rows"
+        ],
+        "source": "docs"
+      },
+      {
+        "n": 2,
+        "do": "Group subscribers by signup period and compare who unsubscribed.",
+        "tool": null,
+        "settings": {},
+        "source": "first_hand"
+      },
+      {
+        "n": 3,
+        "do": "Archive the inactive cohort once the analysis confirms it.",
+        "tool": "beehiiv",
+        "settings": {},
+        "gotchas": [
+          "Archiving is a live change: get the operator's yes first"
+        ],
+        "source": "first_hand"
+      }
+    ],
+    "thresholds": [],
+    "pitfalls": [
+      {
+        "issue": "Dashboard views stop short of cohort analysis",
+        "fix": "Export or use the API for anything beyond the built-in stats",
+        "source": "first_hand"
+      },
+      {
+        "issue": "Expanded post content may not be cached yet",
+        "fix": "On HTTP 202, wait for Retry-After and call again",
+        "source": "docs"
+      }
+    ],
+    "quality_bar": [
+      "Cohorts compared on the same time window"
+    ],
+    "cost": {
+      "band": "lt_50",
+      "per": "month",
+      "drivers": [
+        "Plan tier"
+      ],
+      "free_alternatives": [
+        "The free plan for small lists"
+      ],
+      "source": "inferred"
+    },
+    "limits": [
+      {
+        "what": "Rate limit",
+        "note": "Per key in fixed 60-second windows, scaling by plan; over it returns HTTP 429",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Rate Limiting",
+        "url": "https://developers.beehiiv.com/welcome/rate-limiting",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Create an API Key",
+        "url": "https://developers.beehiiv.com/welcome/create-an-api-key",
+        "covers": [
+          "setup"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "List posts (API reference)",
+        "url": "https://developers.beehiiv.com/api-reference/posts/index",
+        "covers": [
+          "api"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Rate limit for the current plan",
+      "Which plan includes API access"
+    ],
+    "related": [],
+    "evidence": {
+      "first_hand_runs": "1",
+      "last_first_hand": "2026-11"
+    }
+  }
+}

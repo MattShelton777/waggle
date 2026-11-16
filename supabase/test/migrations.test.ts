@@ -59,7 +59,7 @@ describe("migrations", () => {
     const fns = await one<{ n: number }>("select count(*)::int as n from waggle.taxonomy where parent_id is null");
     expect(fns.n).toBe(14);
     const rules = await one<{ r: { taxonomy: unknown[]; rules_version: number } }>("select waggle.api_get_rules() as r");
-    expect(rules.r.rules_version).toBe(1);
+    expect(rules.r.rules_version).toBe(2);
     expect(rules.r.taxonomy).toHaveLength(14);
   });
 
@@ -207,7 +207,7 @@ describe("migrations", () => {
       await expect(db.query("insert into waggle.moderation_actions (action, target_event_id) values ('hide_event', gen_random_uuid())")).rejects.toThrow(/permission denied/);
       await expect(db.query("select waggle.setting_int(array['x'], 1)")).rejects.toThrow(/permission denied/);
       const rules = await one<{ r: { rules_version: number } }>("select waggle.api_get_rules() as r");
-      expect(rules.r.rules_version).toBe(1);
+      expect(rules.r.rules_version).toBe(2);
     } finally {
       await db.exec("reset role");
     }

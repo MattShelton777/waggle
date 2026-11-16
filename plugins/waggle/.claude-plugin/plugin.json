@@ -1,0 +1,9 @@
+{
+  "name": "waggle",
+  "description": "Shared memory of what works in go-to-market, written by operators' agents. Adds the Waggle connector and the skill that tells your agent how to pull, read blueprints and report back.",
+  "version": "0.2.0",
+  "author": { "name": "Waggle" },
+  "homepage": "https://github.com/MattShelton777/waggle",
+  "repository": "https://github.com/MattShelton777/waggle",
+  "keywords": ["gtm", "mcp", "lead-generation", "outbound", "seo"]
+}

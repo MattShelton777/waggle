@@ -259,10 +259,14 @@ export class WaggleDb {
     return this.scalar("select waggle.api_get_summary($1::uuid) as r", [entityId]);
   }
 
-  async searchPlaybooks(p: { embedding: Embedding; query: string; limit?: number }) {
-    const rows = await this.q("select * from waggle.api_search_playbooks($1::extensions.vector, $2, $3)", [vec(p.embedding), p.query, p.limit ?? 5]);
-    return rows as unknown as Array<{ playbook_id: string; title: string; url: string; published_at: string | null; content: string; similarity: number }>;
+  getBlueprint(entityId: string): Promise<{ version: number; updated_at: string; body: Record<string, unknown> } | null> {
+    return this.scalar("select waggle.api_get_blueprint($1::uuid) as r", [entityId]);
   }
+
+  async blueprintEntityIds(): Promise<Set<string>> {
+    return new Set((await this.scalar<string[] | null>("select waggle.api_blueprint_entity_ids() as r")) ?? []);
+  }
+
 
   insertUse(p: {
     subscriberId: string;

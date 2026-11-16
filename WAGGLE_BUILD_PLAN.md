@@ -427,7 +427,7 @@ Small internal dashboard (or Supabase Studio + saved SQL views to start):
 /packages/core          # shared types, Zod schemas, enums, rubric, weight + scoring math
 /supabase/migrations    # DDL, RPC functions, triggers, RLS
 /supabase/functions     # nightly jobs: reputation, summaries, playbook ingest, digest, subscription re-check
-/skill/waggle             # SKILL.md + zip build script
+/plugins/waggle           # Claude Code plugin: SKILL.md, MCP entry, plugin.json
 /sim                    # adversarial simulation harness
 /seed                   # seed entities/events (owner's own, non-employer data)
 /docs                   # this plan, rules text, privacy/terms drafts

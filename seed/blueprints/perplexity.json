@@ -1,0 +1,109 @@
+{
+  "vendor_domains": [
+    "perplexity.ai"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "perplexity",
+    "summary": "Search-grounded answers and a search API. Useful for research steps such as finding pages that match a footprint. Sonar is being folded into the Agent API, so new builds target that.",
+    "use_when": [
+      "A research step needs fresh web results with sources"
+    ],
+    "avoid_when": [
+      "You need the raw HTML of a page: open the page itself"
+    ],
+    "inputs": [
+      {
+        "name": "query",
+        "kind": "text",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "results",
+        "format": "records",
+        "fields": [
+          "title",
+          "url",
+          "snippet"
+        ]
+      }
+    ],
+    "setup": [
+      {
+        "do": "Create an API key and send it as a Bearer token.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Call the Agent API or the Search API, depending on whether you need an answer or a result list.",
+        "tool": "perplexity",
+        "settings": {},
+        "source": "docs"
+      }
+    ],
+    "thresholds": [],
+    "pitfalls": [
+      {
+        "issue": "Old Sonar Chat Completions code",
+        "fix": "Move to the Agent API; async calls need background mode",
+        "source": "docs"
+      },
+      {
+        "issue": "Search snippets drop link attributes",
+        "fix": "Open the page HTML when attributes matter",
+        "source": "inferred"
+      }
+    ],
+    "quality_bar": [],
+    "limits": [
+      {
+        "what": "Rate limits",
+        "note": "Set by usage tier, which rises with lifetime purchases",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Migrate from Sonar to the Agent API",
+        "url": "https://docs.perplexity.ai/docs/sonar/quickstart",
+        "covers": [
+          "api",
+          "setup",
+          "changelog"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Pricing",
+        "url": "https://docs.perplexity.ai/docs/getting-started/pricing",
+        "covers": [
+          "pricing"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Rate Limits & Usage Tiers",
+        "url": "https://docs.perplexity.ai/guides/usage-tiers",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Sonar end-of-support date",
+      "Per-request and per-token prices"
+    ],
+    "related": [
+      "sponsor-page-backlink-audit"
+    ],
+    "evidence": {
+      "first_hand_runs": "0",
+      "last_first_hand": null
+    }
+  }
+}

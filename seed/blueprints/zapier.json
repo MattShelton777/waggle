@@ -1,0 +1,130 @@
+{
+  "vendor_domains": [
+    "zapier.com"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "zapier",
+    "summary": "No-code trigger-and-action automation. Quick for simple flows; branching or high-volume flows get awkward and costly, where a script is simpler.",
+    "use_when": [
+      "A simple trigger and one or two actions",
+      "Low volume"
+    ],
+    "avoid_when": [
+      "Heavy branching or high volume",
+      "Long-running code"
+    ],
+    "inputs": [
+      {
+        "name": "trigger_app",
+        "kind": "text",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "zap",
+        "format": "text"
+      }
+    ],
+    "setup": [
+      {
+        "do": "Estimate monthly tasks: each successful action step is one task.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Build the trigger and actions, keeping filters and formatters free of task cost.",
+        "tool": "zapier",
+        "settings": {},
+        "source": "docs"
+      },
+      {
+        "n": 2,
+        "do": "Move the flow to a script once it needs many branches or high volume.",
+        "tool": null,
+        "settings": {},
+        "source": "first_hand"
+      }
+    ],
+    "thresholds": [],
+    "pitfalls": [
+      {
+        "issue": "Branching and volume make flows awkward and costly",
+        "fix": "Use code or a script for those cases",
+        "source": "first_hand"
+      },
+      {
+        "issue": "Code steps time out fast on lower plans",
+        "fix": "Check the plan's code runtime before putting logic in a code step",
+        "source": "docs"
+      }
+    ],
+    "quality_bar": [
+      "Task usage estimated before launch"
+    ],
+    "cost": {
+      "band": "lt_50",
+      "per": "month",
+      "drivers": [
+        "Tasks per month"
+      ],
+      "free_alternatives": [
+        "A scheduled script for high-volume flows"
+      ],
+      "source": "inferred"
+    },
+    "limits": [
+      {
+        "what": "Task limit",
+        "note": "At the limit, runs are held until reset unless pay-per-task billing is on",
+        "source": "docs"
+      },
+      {
+        "what": "Code steps",
+        "note": "JavaScript or Python only, with runtime and rate limits by plan",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "How is task usage measured in Zapier?",
+        "url": "https://help.zapier.com/hc/en-us/articles/8496196837261-How-is-task-usage-measured-in-Zapier",
+        "covers": [
+          "concepts",
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Using Code by Zapier",
+        "url": "https://help.zapier.com/hc/en-us/articles/45405528551181-Using-Code-by-Zapier",
+        "covers": [
+          "setup",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Code by Zapier rate limits",
+        "url": "https://help.zapier.com/hc/en-us/articles/29971850476173-Code-by-Zapier-rate-limits",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Code step runtime for the current plan",
+      "Code step rate limits"
+    ],
+    "related": [],
+    "evidence": {
+      "first_hand_runs": "1",
+      "last_first_hand": "2026-11"
+    }
+  }
+}

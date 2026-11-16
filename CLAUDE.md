@@ -15,7 +15,7 @@ supabase/migrations  DDL, append-only triggers, views, roles, RLS, RPC functions
 supabase/test        runs every migration in PGlite (Postgres + pgvector + pg_trgm) and tests the RPCs
 sim                  adversarial simulation of the reputation model (`npm run sim`)
 docs                 simulation results and (later) rules, privacy, terms drafts
-skill/waggle         the thin SKILL.md shipped to clients
+plugins/waggle       the Claude Code plugin: SKILL.md, the MCP server entry, plugin.json (marketplace in .claude-plugin/)
 apps/connect         static site on GitHub Pages: homepage with setup module, OAuth consent page, approval page
 apps/admin           not built yet
 ```

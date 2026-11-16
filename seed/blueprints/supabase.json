@@ -1,0 +1,153 @@
+{
+  "vendor_domains": [
+    "supabase.com"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "supabase",
+    "summary": "Hosted Postgres backend, including a lead store for enrichment jobs. Auth, edge functions and logs help; schema, roles and security need deliberate setup before anything faces outside users.",
+    "use_when": [
+      "You need a real database behind an automation",
+      "You want hosted functions and logs in one place"
+    ],
+    "avoid_when": [
+      "A spreadsheet is enough",
+      "Nobody will set up roles and row-level security"
+    ],
+    "inputs": [
+      {
+        "name": "schema",
+        "kind": "text",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "project",
+        "format": "text"
+      }
+    ],
+    "setup": [
+      {
+        "do": "Design tables, roles and row-level security before exposing anything to outside users.",
+        "source": "first_hand"
+      },
+      {
+        "do": "Enable extensions such as pgvector or pg_cron from the dashboard when needed.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Create the lead store schema and load records.",
+        "tool": "supabase",
+        "settings": {},
+        "source": "first_hand"
+      },
+      {
+        "n": 2,
+        "do": "Run enrichment or sync jobs as edge functions, keeping each call short.",
+        "tool": "supabase",
+        "settings": {},
+        "gotchas": [
+          "Edge functions return 504 after the idle timeout"
+        ],
+        "source": "docs"
+      },
+      {
+        "n": 3,
+        "do": "Use the logs to check jobs after each run.",
+        "tool": "supabase",
+        "settings": {},
+        "source": "first_hand"
+      }
+    ],
+    "thresholds": [
+      {
+        "name": "Edge function CPU per request",
+        "value": "2 seconds",
+        "why": "Longer CPU work is cut off",
+        "source": "docs"
+      }
+    ],
+    "pitfalls": [
+      {
+        "issue": "Default setup is not safe for outside users",
+        "fix": "Set roles and row-level security deliberately first",
+        "source": "first_hand"
+      },
+      {
+        "issue": "Free projects pause after a week of inactivity",
+        "fix": "Use a paid plan for anything that runs on a schedule",
+        "source": "docs"
+      }
+    ],
+    "quality_bar": [
+      "Row-level security on every exposed table"
+    ],
+    "cost": {
+      "band": "lt_50",
+      "per": "month",
+      "drivers": [
+        "Compute size",
+        "Function invocations"
+      ],
+      "free_alternatives": [
+        "The Free plan for prototypes"
+      ],
+      "source": "inferred"
+    },
+    "limits": [
+      {
+        "what": "Edge functions",
+        "note": "256 MB memory, an idle timeout and a wall-clock cap that is longer on paid plans",
+        "source": "docs"
+      },
+      {
+        "what": "Free plan",
+        "note": "Two active projects with a small database each",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Database overview",
+        "url": "https://supabase.com/docs/guides/database/overview",
+        "covers": [
+          "concepts",
+          "setup"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Edge Functions limits",
+        "url": "https://supabase.com/docs/guides/functions/limits",
+        "covers": [
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Supabase pricing",
+        "url": "https://supabase.com/pricing",
+        "covers": [
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Edge function wall-clock cap",
+      "Free plan limits"
+    ],
+    "related": [
+      "claude-code"
+    ],
+    "evidence": {
+      "first_hand_runs": "1",
+      "last_first_hand": "2026-11"
+    }
+  }
+}

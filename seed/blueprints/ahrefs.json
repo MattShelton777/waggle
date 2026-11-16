@@ -1,0 +1,168 @@
+{
+  "vendor_domains": [
+    "ahrefs.com"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "ahrefs",
+    "summary": "Backlink and domain-strength data. Best used for competitor domain strength, referring-domain checks and grading local link targets before a market go or no-go call.",
+    "use_when": [
+      "You need domain strength or referring domains for a list of sites",
+      "You are deciding whether a local market is worth entering"
+    ],
+    "avoid_when": [
+      "You only need a handful of domain ratings: the free checker covers that"
+    ],
+    "inputs": [
+      {
+        "name": "domains",
+        "kind": "list",
+        "required": true,
+        "note": "One domain per row, deduplicated"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "domain_metrics",
+        "format": "table",
+        "fields": [
+          "domain",
+          "domain_rating",
+          "referring_domains"
+        ]
+      }
+    ],
+    "setup": [
+      {
+        "do": "Confirm the plan includes API v3; plans below Lite only get a few free test queries.",
+        "source": "docs"
+      },
+      {
+        "do": "Request only the fields you need, since each field adds to the per-row unit cost.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Deduplicate targets to the registrable domain before any lookup.",
+        "tool": null,
+        "settings": {},
+        "gotchas": [
+          "Repeated lookups of the same domain spend units twice unless cached"
+        ],
+        "source": "inferred"
+      },
+      {
+        "n": 2,
+        "do": "Pull domain rating and referring domains for competitor and target domains.",
+        "tool": "ahrefs",
+        "settings": {
+          "fields": "domain_rating, refdomains"
+        },
+        "check": "Every row has a domain rating",
+        "gotchas": [
+          "Subdomains of large hosting platforms show the platform's strength, not the site's"
+        ],
+        "source": "first_hand"
+      },
+      {
+        "n": 3,
+        "do": "Grade local link targets by strength against the competitors you need to beat.",
+        "tool": null,
+        "settings": {},
+        "source": "first_hand"
+      }
+    ],
+    "thresholds": [
+      {
+        "name": "Rate limit",
+        "value": "60 requests per minute",
+        "why": "Over it the API returns HTTP 429",
+        "source": "docs"
+      }
+    ],
+    "pitfalls": [
+      {
+        "issue": "Platform subdomains overstate a site's strength",
+        "fix": "Flag or discount rows hosted on a large platform's subdomain",
+        "source": "first_hand"
+      },
+      {
+        "issue": "Wide field lists burn API units fast",
+        "fix": "Ask for the minimum fields and fewest rows the decision needs",
+        "source": "docs"
+      }
+    ],
+    "quality_bar": [
+      "One row per domain",
+      "Platform subdomains flagged"
+    ],
+    "cost": {
+      "band": "50_250",
+      "per": "month",
+      "drivers": [
+        "Plan tier",
+        "API units per request"
+      ],
+      "free_alternatives": [
+        "Ahrefs' free domain rating checker for a few domains"
+      ],
+      "source": "inferred"
+    },
+    "limits": [
+      {
+        "what": "API units",
+        "note": "Each request costs the larger of a base charge or per-row cost times rows; cached requests are free",
+        "source": "docs"
+      },
+      {
+        "what": "Monthly allotment",
+        "note": "Units scale by plan and are shared across the API, the MCP server and Ahrefs Connect",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Ahrefs API v3: Introduction",
+        "url": "https://docs.ahrefs.com/en/api/docs/introduction",
+        "covers": [
+          "api",
+          "setup",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Ahrefs API v3: Limits consumption",
+        "url": "https://docs.ahrefs.com/en/api/docs/limits-consumption",
+        "covers": [
+          "limits",
+          "concepts"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "About API v3 (Ahrefs Help Center)",
+        "url": "https://help.ahrefs.com/en/articles/6559232-about-api-v3",
+        "covers": [
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Monthly unit allotment for the current plan",
+      "Rate limit",
+      "Rows allowed per request"
+    ],
+    "related": [
+      "sponsor-page-backlink-audit"
+    ],
+    "evidence": {
+      "first_hand_runs": "1",
+      "last_first_hand": "2026-11"
+    }
+  }
+}

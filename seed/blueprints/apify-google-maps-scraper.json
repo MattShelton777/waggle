@@ -1,0 +1,170 @@
+{
+  "vendor_domains": [
+    "apify.com"
+  ],
+  "blueprint": {
+    "blueprint_version": 1,
+    "entity": "apify-google-maps-scraper",
+    "summary": "Scrapes Google Maps listings, ratings and websites for a service area. Works best as the first step of a local lead list, followed by a website scrape or enrichment.",
+    "use_when": [
+      "You need local businesses of one type in a defined area",
+      "You will enrich the list afterwards"
+    ],
+    "avoid_when": [
+      "You need owner names or emails directly: the listings rarely have them"
+    ],
+    "inputs": [
+      {
+        "name": "search_terms",
+        "kind": "list",
+        "required": true,
+        "note": "Business type, for example roofing contractor"
+      },
+      {
+        "name": "location",
+        "kind": "text",
+        "required": true,
+        "note": "City or area; without it results cap at the per-area limit"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listings",
+        "format": "records",
+        "fields": [
+          "name",
+          "category",
+          "rating",
+          "reviews_count",
+          "website",
+          "phone",
+          "address"
+        ]
+      }
+    ],
+    "setup": [
+      {
+        "do": "Start on the Free plan's monthly credit to size a run before paying.",
+        "source": "docs"
+      }
+    ],
+    "steps": [
+      {
+        "n": 1,
+        "do": "Run the actor with search terms plus an explicit location for the service area.",
+        "tool": "apify-google-maps-scraper",
+        "settings": {
+          "add_ons": "off unless needed"
+        },
+        "check": "Results cover the whole area, not one cluster",
+        "gotchas": [
+          "A search term with no location stops at the per-area cap"
+        ],
+        "source": "first_hand"
+      },
+      {
+        "n": 2,
+        "do": "Split listings into those with a website and those without.",
+        "tool": null,
+        "settings": {},
+        "gotchas": [
+          "Some listings lack a website or have thin details"
+        ],
+        "source": "first_hand"
+      },
+      {
+        "n": 3,
+        "do": "Plan a site scrape or enrichment step for the listings that need more detail.",
+        "tool": null,
+        "settings": {},
+        "source": "first_hand"
+      }
+    ],
+    "thresholds": [
+      {
+        "name": "Results per search with no location",
+        "value": "120",
+        "why": "Google Maps caps results per area unless a location is given",
+        "source": "docs"
+      }
+    ],
+    "pitfalls": [
+      {
+        "issue": "Paid add-ons (contact enrichment, reviews, social profiles) are billed as separate events",
+        "fix": "Leave add-ons off and enrich only the rows that need it later",
+        "source": "docs"
+      },
+      {
+        "issue": "Thin listings stall the next step",
+        "fix": "Route listings without a website to enrichment instead of a site scrape",
+        "source": "first_hand"
+      }
+    ],
+    "quality_bar": [
+      "Every listing has a category and location",
+      "Listings without a website are marked"
+    ],
+    "cost": {
+      "band": "lt_50",
+      "per": "run",
+      "drivers": [
+        "Places scraped",
+        "Add-on events",
+        "Compute units"
+      ],
+      "free_alternatives": [
+        "The Free plan's monthly credit covers a small run"
+      ],
+      "source": "inferred"
+    },
+    "time": {
+      "setup": "lt_1h",
+      "per_run": "15m_1h"
+    },
+    "limits": [
+      {
+        "what": "Compute units",
+        "note": "Memory in GB times run hours, billed to the second",
+        "source": "docs"
+      }
+    ],
+    "docs": [
+      {
+        "title": "Google Maps Scraper (compass/crawler-google-places)",
+        "url": "https://apify.com/compass/crawler-google-places",
+        "covers": [
+          "setup",
+          "pricing",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Actor usage and resources",
+        "url": "https://docs.apify.com/actors/running/usage-and-resources",
+        "covers": [
+          "concepts",
+          "limits"
+        ],
+        "checked": "2026-11-16"
+      },
+      {
+        "title": "Apify pricing",
+        "url": "https://apify.com/pricing",
+        "covers": [
+          "pricing"
+        ],
+        "checked": "2026-11-16"
+      }
+    ],
+    "verify_live": [
+      "Price per thousand places and per add-on",
+      "Free plan monthly credit"
+    ],
+    "related": [],
+    "evidence": {
+      "first_hand_runs": "1",
+      "last_first_hand": "2026-11"
+    }
+  }
+}
