@@ -1,0 +1,35 @@
+{
+  "blueprint_version": 1,
+  "entity": "sponsor-page-backlink-audit",
+  "summary": "Finds local organizations that publish sponsor pages, keeps only pages whose sponsor links pass equity, and ranks them by domain strength and cost. Use it to build local links for a site in one city, and rerun it per city.",
+  "use_when": ["You need local, topically neutral backlinks for a city-specific site", "You can spend a small budget per link"],
+  "avoid_when": ["You need links fast at scale", "The site is not tied to one place"],
+  "inputs": [
+    { "name": "city", "kind": "text", "required": true, "note": "Add nearby suburbs as extra runs" },
+    { "name": "budget_per_link", "kind": "number", "required": false, "note": "Used to drop tiers you won't pay for" }
+  ],
+  "outputs": [
+    { "name": "ranked_targets", "format": "csv", "fields": ["url", "org", "link_rel", "domain_rating", "price_tier", "tier", "next_step"], "note": "One row per domain" }
+  ],
+  "steps": [
+    { "n": 1, "do": "Search for local sponsor pages with footprints such as the city plus sponsors, our sponsors or become a sponsor.", "tool": "perplexity", "settings": {}, "check": "Each result is an organization's own sponsor page", "gotchas": ["Skip news posts, social posts and documents: they rarely carry a lasting followed link"], "source": "first_hand" },
+    { "n": 2, "do": "Open each page's raw HTML and record the rel attribute of every sponsor link.", "tool": null, "settings": {}, "check": "Every target has link_rel recorded from HTML, not from a text reader", "gotchas": ["Text readers and search snippets drop rel attributes", "Plain-text sponsor listings carry no link at all"], "source": "first_hand" },
+    { "n": 3, "do": "Drop links marked sponsored or ugc, and treat nofollow as no equity.", "tool": null, "settings": {}, "check": "Only followed links remain in tiers 1-2", "gotchas": [], "source": "first_hand" },
+    { "n": 4, "do": "Pull domain strength for each remaining domain.", "tool": "ahrefs", "settings": {}, "check": "Every row has a domain rating", "gotchas": ["Pages on a platform subdomain inherit the platform's rating, not the organization's"], "source": "first_hand" },
+    { "n": 5, "do": "Rank into tiers by link type, domain strength and price.", "tool": null, "settings": {}, "check": "Tier 1 is followed, relevant and within budget", "gotchas": ["A new sponsor page with no sponsors yet is an early opening: list it as an ask"], "source": "first_hand" }
+  ],
+  "thresholds": [],
+  "pitfalls": [
+    { "issue": "Paying for a sponsor tier that shows only a logo image with no link", "fix": "Confirm in writing that the tier includes a followed text or image link before paying", "source": "inferred" }
+  ],
+  "quality_bar": ["Every tier 1 target has a followed link confirmed from HTML", "One row per domain", "Each row has a next step"],
+  "cost": { "band": "50_250", "per": "run", "drivers": ["Sponsorship fees", "Domain-rating lookups"], "free_alternatives": ["Ahrefs' free domain rating checker"], "source": "inferred" },
+  "time": { "setup": "lt_1h", "per_run": "1_4h" },
+  "limits": [],
+  "docs": [
+    { "title": "Google: qualify outbound links (rel values)", "url": "https://developers.google.com/search/docs/crawling-indexing/qualify-outbound-links", "covers": ["setup"], "checked": "2026-11-16" }
+  ],
+  "verify_live": ["Ahrefs API pricing and units", "Each organization's current sponsorship price"],
+  "related": ["ahrefs", "local-sponsor-backlinks"],
+  "evidence": { "first_hand_runs": "1", "last_first_hand": "2026-11" }
+}

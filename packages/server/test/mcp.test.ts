@@ -16,15 +16,16 @@ let clock = new Date();
 const deps = (): Deps => ({ db, embedder: noEmbeddings, approvalSecret: "test-secret", now: () => clock });
 
 let rpcId = 0;
-async function rpc(subscriberId: string, method: string, params: Record<string, unknown> = {}) {
+async function rpc(subscriberId: string, method: string, params: Record<string, unknown> = {}, d: Deps = deps(), toolTimeoutMs?: number) {
   const res = await handleMcpRequest(
-    deps(),
+    d,
     subscriberId,
     new Request("http://localhost/mcp", {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json, text/event-stream", "mcp-protocol-version": "2025-06-18" },
       body: JSON.stringify({ jsonrpc: "2.0", id: ++rpcId, method, params }),
     }),
+    toolTimeoutMs,
   );
   const text = await res.text();
   const payload = res.headers.get("content-type")?.includes("text/event-stream")
@@ -35,8 +36,8 @@ async function rpc(subscriberId: string, method: string, params: Record<string, 
   return msg.result;
 }
 
-async function call(subscriberId: string, name: string, args: Record<string, unknown> = {}) {
-  const result = await rpc(subscriberId, "tools/call", { name, arguments: args });
+async function call(subscriberId: string, name: string, args: Record<string, unknown> = {}, d?: Deps, toolTimeoutMs?: number) {
+  const result = await rpc(subscriberId, "tools/call", { name, arguments: args }, d, toolTimeoutMs);
   const body = JSON.parse(result.content[0].text);
   return { isError: !!result.isError, body };
 }
@@ -215,5 +216,33 @@ describe("Waggle MCP server", () => {
   it("rejects banned or unknown subscribers", async () => {
     const unknown = await call(crypto.randomUUID(), "waggle_check", {});
     expect(unknown.body.error).toBe("not_connected");
+  });
+
+  it("falls back to text search when embeddings hang, instead of hanging the call", async () => {
+    const hanging = { embed: () => new Promise<number[] | null>(() => {}) };
+    const started = Date.now();
+    const { isError, body } = await call(matt, "waggle_discover", { task: "build a contact list of local trades businesses" }, { ...deps(), embedder: hanging });
+    expect(isError).toBe(false);
+    expect(Date.now() - started).toBeLessThan(8_000);
+    expect(body).toHaveProperty("results");
+  }, 15_000);
+
+  it("ends a slow call with a clear, retryable timeout error", async () => {
+    const slowDb = new Proxy(db, {
+      get(target, prop, recv) {
+        const v = Reflect.get(target, prop, recv);
+        if (prop === "searchEntities") return () => new Promise(() => {});
+        return typeof v === "function" ? v.bind(target) : v;
+      },
+    });
+    const { isError, body } = await call(matt, "waggle_check", { query: "enrichment" }, { ...deps(), db: slowDb }, 200);
+    expect(isError).toBe(true);
+    expect(body).toMatchObject({ error: "timeout", retryable: true });
+  });
+
+  it("points to waggle_inspect when no playbook matches", async () => {
+    const { body } = await call(matt, "waggle_playbooks", { query: "zzzz no such playbook topic" });
+    expect(body.result_count).toBe(0);
+    expect(body.note).toMatch(/waggle_inspect/);
   });
 });

@@ -30,6 +30,8 @@ import { dimensionView, evidenceView, groupByEntity, rowContext, score, scoreVie
 // other contributors only appears in fields named *_data.
 
 const DAY_MS = 86_400_000;
+/** Discover keeps entities whose best similarity is within this of the top match. */
+export const DISCOVER_RELATIVE_BAND = 0.1;
 
 export async function getRules(ctx: RequestContext) {
   const rules = await ctx.db.getRules();
@@ -122,7 +124,15 @@ export async function discover(ctx: RequestContext, input: DiscoverInput) {
   const limit = input.limit ?? 8;
   const embedding = await ctx.embedder.embed(input.task);
   const matches = await ctx.db.discover({ embedding, query: input.task, type: input.type, limit: 80 });
-  const relevant = matches.filter((m) => m.similarity >= (embedding ? 0.35 : 0.2));
+  const floor = embedding ? 0.35 : 0.2;
+  // Keep only entities whose best match is close to the best match overall, so a
+  // loosely related tool doesn't ride in on volume of evidence (run 1: a maps
+  // scraper ranked for a sponsor-page job).
+  const bestByEntity = new Map<string, number>();
+  for (const m of matches) bestByEntity.set(m.entity_id, Math.max(bestByEntity.get(m.entity_id) ?? 0, m.similarity));
+  const top = Math.max(0, ...bestByEntity.values());
+  const band = embedding ? DISCOVER_RELATIVE_BAND : DISCOVER_RELATIVE_BAND * 2;
+  const relevant = matches.filter((m) => m.similarity >= floor && (bestByEntity.get(m.entity_id) ?? 0) >= top - band);
 
   // Aggregate rationale matches per entity (Cairn's discover route).
   const agg = new Map<string, { relevance: number; eventIds: string[] }>();
@@ -224,7 +234,14 @@ export async function playbooks(ctx: RequestContext, input: PlaybooksInput) {
   const results = hits
     .filter((h) => h.similarity >= (embedding ? 0.3 : 0.15))
     .map((h) => ({ title: h.title, url: h.url, published: h.published_at?.slice(0, 10) ?? null, excerpt_data: h.content.slice(0, 1200) }));
-  return { results, result_count: results.length };
+  return {
+    results,
+    result_count: results.length,
+    note:
+      results.length === 0
+        ? "No playbook matches this yet. Step-by-step methods live on entities: call waggle_inspect on a tool or workflow from waggle_check or waggle_discover."
+        : undefined,
+  };
 }
 
 export async function openTests(ctx: RequestContext, input: OpenTestsInput) {

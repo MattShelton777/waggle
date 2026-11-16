@@ -13,6 +13,7 @@ import type { ZodType } from "zod";
 import { buildNotices, loadContext, WaggleError, type Deps, type RequestContext } from "./context";
 import { check, discover, getRules, inspect, openTests, playbooks } from "./read-tools";
 import { SERVER_INSTRUCTIONS, SERVER_NAME, SERVER_VERSION, TOOL_TEXT } from "./text";
+import { timedEmbedder, TOOL_TIMEOUT_MS, WaggleTimeout, withTimeout } from "./timeouts";
 import { logUse, report } from "./write-tools";
 
 // MCP wiring. Edge Functions are stateless, so a fresh server is built per
@@ -24,7 +25,8 @@ const READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: 
 // Writes only ever append evidence; nothing can be updated or deleted.
 const APPEND_ONLY = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } as const;
 
-export function buildServer(deps: Deps, subscriberId: string): McpServer {
+export function buildServer(rawDeps: Deps, subscriberId: string, toolTimeoutMs = TOOL_TIMEOUT_MS): McpServer {
+  const deps: Deps = { ...rawDeps, embedder: timedEmbedder(rawDeps.embedder) };
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION }, { instructions: SERVER_INSTRUCTIONS });
 
   let ctxPromise: Promise<RequestContext> | undefined;
@@ -38,18 +40,34 @@ export function buildServer(deps: Deps, subscriberId: string): McpServer {
     const started = Date.now();
     let c: RequestContext | undefined;
     try {
-      c = await ctx();
-      const result = await fn(c, args);
-      const seen = tool === "waggle_get_rules" ? c.rulesVersion : args.rules_version_seen;
-      const [notices] = await Promise.all([
-        buildNotices(c, seen),
-        c.db.touchSubscriber(subscriberId, seen),
-        c.db.logCall(subscriberId, tool, Date.now() - started, resultCount(result), true),
-      ]);
-      const body = { ...result, notices };
+      const body = await withTimeout(
+        (async () => {
+          c = await ctx();
+          const result = await fn(c, args);
+          const seen = tool === "waggle_get_rules" ? c.rulesVersion : args.rules_version_seen;
+          const [notices] = await Promise.all([
+            buildNotices(c, seen),
+            c.db.touchSubscriber(subscriberId, seen),
+            c.db.logCall(subscriberId, tool, Date.now() - started, resultCount(result), true),
+          ]);
+          return { ...result, notices };
+        })(),
+        toolTimeoutMs,
+      );
       return { content: [{ type: "text" as const, text: JSON.stringify(body) }], structuredContent: body };
     } catch (err) {
       await deps.db.logCall(c ? subscriberId : null, tool, Date.now() - started, null, false).catch(() => {});
+      if (err instanceof WaggleTimeout) {
+        const write = tool === "waggle_report" || tool === "waggle_log_use";
+        const body = {
+          error: "timeout",
+          retryable: true,
+          message: write
+            ? "Waggle didn't answer in time. The submission may or may not have saved: check with waggle_inspect before you resubmit."
+            : "Waggle didn't answer in time. Try once more; if it times out again, carry on without it.",
+        };
+        return { isError: true, content: [{ type: "text" as const, text: JSON.stringify(body) }] };
+      }
       if (err instanceof WaggleError) {
         const body = { error: err.code, message: err.message };
         return { isError: true, content: [{ type: "text" as const, text: JSON.stringify(body) }] };
@@ -96,6 +114,6 @@ function resultCount(result: Record<string, unknown>): number | null {
 }
 
 /** Serve one MCP HTTP request for an authenticated subscriber. */
-export function handleMcpRequest(deps: Deps, subscriberId: string, request: Request): Promise<Response> {
-  return createMcpHandler(() => buildServer(deps, subscriberId)).fetch(request);
+export function handleMcpRequest(deps: Deps, subscriberId: string, request: Request, toolTimeoutMs?: number): Promise<Response> {
+  return createMcpHandler(() => buildServer(deps, subscriberId, toolTimeoutMs)).fetch(request);
 }

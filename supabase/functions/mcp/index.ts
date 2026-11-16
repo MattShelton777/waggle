@@ -36,7 +36,7 @@ const dbUrl = () => {
 };
 
 // Transaction-mode pooler URL for waggle_api_login. prepare:false is required by the pooler.
-const sql = postgres(dbUrl(), { prepare: false, max: 3, idle_timeout: 20 });
+const sql = postgres(dbUrl(), { prepare: false, max: 3, idle_timeout: 20, connect_timeout: 5 });
 const db = new WaggleDb((text, params) => sql.unsafe(text, (params ?? []) as never[]) as never);
 
 // Supabase's built-in gte-small model (384 dims) runs inside the Edge Runtime at no token cost.

@@ -35,7 +35,7 @@ const dbUrl = () => {
   return v;
 };
 
-const sql = postgres(dbUrl(), { prepare: false, max: 3, idle_timeout: 20 });
+const sql = postgres(dbUrl(), { prepare: false, max: 3, idle_timeout: 20, connect_timeout: 5 });
 const deps = {
   db: new WaggleDb((text: string, params?: unknown[]) => sql.unsafe(text, (params ?? []) as never[]) as never),
 };
