@@ -173,7 +173,8 @@ export interface ProposedNodePayload {
 export type Embedding = number[] | null;
 
 const vec = (e: Embedding) => (e ? `[${e.join(",")}]` : null);
-const json = (v: unknown) => (v === undefined || v === null ? null : JSON.stringify(v));
+// postgres.js serializes jsonb params itself; stringifying here double-encodes them into a jsonb string.
+const json = (v: unknown) => (v === undefined || v === null ? null : v);
 
 export class WaggleDb {
   constructor(private readonly q: Query) {}
