@@ -151,12 +151,13 @@ describe("Waggle MCP server", () => {
     expect(body.entity.status).toBe("pending");
 
     const hidden = await call(matt, "waggle_check", { query: "question subject line" });
-    expect(hidden.body.result_count).toBe(0);
+    // Seeded tactics match too; the pending one must not.
+    expect(hidden.body.results.map((r: { entity: { slug: string } }) => r.entity.slug)).not.toContain("question-style-subject-line");
 
     const hash = await approvalTokenHash("test-secret", body.event_id);
     await pg.query("select waggle.api_decide_approval($1, 'approve')", [hash]);
     const visible = await call(matt, "waggle_check", { query: "question subject line" });
-    expect(visible.body.results[0].entity.slug).toBe("question-style-subject-line");
+    expect(visible.body.results.map((r: { entity: { slug: string } }) => r.entity.slug)).toContain("question-style-subject-line");
   });
 
   it("closes the loop: log a use, see it due, submit a readout", async () => {

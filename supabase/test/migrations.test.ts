@@ -63,6 +63,22 @@ describe("migrations", () => {
     expect(rules.r.taxonomy).toHaveLength(14);
   });
 
+  it("seed active entities with a primary taxonomy, valid workflow steps, and no events", async () => {
+    const counts = await one<{ n: number; primaries: number; events: number }>(
+      `select count(*)::int as n,
+              (select count(*)::int from waggle.entity_taxonomy where is_primary) as primaries,
+              (select count(*)::int from waggle.events) as events
+       from waggle.entities where status = 'active'`,
+    );
+    expect(counts).toEqual({ n: 43, primaries: 43, events: 0 });
+    const badSteps = await one<{ n: number }>(
+      `select count(*)::int as n
+       from waggle.entities w, jsonb_array_elements_text(w.attributes -> 'workflow_steps') step
+       where w.type = 'workflow' and not exists (select 1 from waggle.entities t where t.type = 'tool' and t.slug = step)`,
+    );
+    expect(badSteps.n).toBe(0);
+  });
+
   it("supports the full write path through RPC", async () => {
     const work = await one<{ id: string }>("select waggle.api_ensure_subscriber(gen_random_uuid(), 'matt@superproductive.co', false) as id");
     const other = await one<{ id: string }>("select waggle.api_ensure_subscriber(gen_random_uuid(), 'ops@example-agency.com', false) as id");
@@ -101,7 +117,8 @@ describe("migrations", () => {
     const found = await db.query<{ slug: string }>("select slug from waggle.api_search_entities(p_query => 'maps enrichment')");
     expect(found.rows.map((r) => r.slug)).toContain("maps-scrape-enrich");
     const byFn = await db.query<{ slug: string }>("select slug from waggle.api_search_entities(p_function => 'gtm_engineering', p_subfunction => 'enrichment')");
-    expect(byFn.rows.map((r) => r.slug)).toEqual(["maps-scrape-enrich"]);
+    expect(byFn.rows.map((r) => r.slug)).toContain("maps-scrape-enrich");
+    expect(byFn.rows.map((r) => r.slug)).not.toContain("apollo"); // seeded under sales/prospecting
 
     // Scoring rows feed core's compute-on-read scorer.
     const rows = await db.query<{ id: string; subscriber_id: string; voice_key: string; score: number; base_weight: number; reputation: number; observed_at: Date }>(

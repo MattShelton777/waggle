@@ -7,7 +7,7 @@ Status legend: ✅ done · ⬜ to do (you) · 🔁 repeat on every release.
 ## 1. Project and database
 
 - ✅ Project `Waggle` (ref `wckkmbdfqeqgrispgdbx`, us-west-2), created 2026-11-15. It replaced the first project (`yoagtdkpsomjzauoxvxb`), which only ever held schema and seed data.
-- ✅ Migrations applied (5). Local files in `supabase/migrations` are named with the versions the project records.
+- ✅ Migrations applied (6, including the 43 seed entities from `seed/candidates.md`, which carry no ratings yet). Local files in `supabase/migrations` are named with the versions the project records.
 - ⬜ Enable backups / point-in-time recovery (Database → Backups) when you move to a paid plan.
 - ✅ Repo linked with the CLI (`npx supabase link --project-ref wckkmbdfqeqgrispgdbx`). The CLI runs through `npx`; no global install needed.
 
